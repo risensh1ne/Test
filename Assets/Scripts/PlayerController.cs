@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour {
 	
@@ -11,14 +12,19 @@ public class PlayerController : MonoBehaviour {
 		
 	bool specialAttack1start = false;
 	bool specialAttack2start = false;
-	
+	public bool specialAttack3start = false;
+
 	private Vector3 destinationPos;
 	Transform targetEnemy;
+
+	public Transform fireballPrefab;
 
 	Vector2 healthBarSize = new Vector2(50, 5);
 	
 	public Texture2D progressBarBack;
 	public Texture2D progressBarHealth;
+
+	private Transform firePoint;
 
 	public RectTransform healthBarTransform;
 	public Image visualHealth;
@@ -49,6 +55,12 @@ public class PlayerController : MonoBehaviour {
 		
 		anim = GetComponent<Animator> ();
 
+		firePoint = transform.Find ("FirePoint");
+		if (firePoint == null) {
+			Debug.Log ("Can't find firepoint");
+			return;
+		}
+
 		cachedY = healthBarTransform.position.y;
 		maxXValue = healthBarTransform.position.x;
 		minXValue = healthBarTransform.position.x - healthBarTransform.rect.width;
@@ -62,12 +74,14 @@ public class PlayerController : MonoBehaviour {
 			return;
 
 		if (Input.GetMouseButtonDown (0)) {
-			
+
 			Vector3 eventPos = ScreenToWorld (new Vector2 (Input.mousePosition.x, Input.mousePosition.y));
 			eventPos.y = transform.position.y;
 			
 			RaycastHit hitInfo = new RaycastHit ();
 			bool hit = Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out hitInfo);
+
+		
 			if (hit && hitInfo.transform.gameObject.tag == "enemy") {
 				targetEnemy = hitInfo.transform;
 				
@@ -102,7 +116,11 @@ public class PlayerController : MonoBehaviour {
 				specialAttack2start = true;
 				anim.SetTrigger ("special02");
 			}
-		} 
+		} else if (Input.GetKeyDown (KeyCode.W)) {
+			OnSpecialAttack3();
+
+
+		}
 		
 		if (isMoving || isAttacking) {
 			float distance = Vector3.Distance (transform.position, destinationPos);
@@ -213,6 +231,25 @@ public class PlayerController : MonoBehaviour {
 	{
 		specialAttack2start = false;
 	}
+
+	public void OnSpecialAttack3()
+	{
+		if (specialAttack3start)
+			return;
+		specialAttack3start = true;
+
+		if (targetEnemy != null) {
+			Vector3 dir = (destinationPos - transform.position).normalized;
+
+			GameObject fireballObj = ObjectPool.instance.GetObjectForType ("Fireball", true);
+			if (fireballObj != null) {
+				fireballObj.transform.position = firePoint.position;
+				fireballObj.transform.rotation = Quaternion.LookRotation (dir);
+				//Instantiate(fireballPrefab, firePoint.position, Quaternion.LookRotation (dir));
+			}
+		}
+	}
+
 	
 	void DamageEnemy(float damage)
 	{
@@ -231,6 +268,7 @@ public class PlayerController : MonoBehaviour {
 		GUI.DrawTexture (new Rect (0, 0, healthBarSize.x * (currentHealth / 100), healthBarSize.y), progressBarHealth);
 		GUI.EndGroup();
 		GUI.EndGroup ();
+
 	}
 
 	Vector3 ScreenToWorld( Vector2 screenPos )

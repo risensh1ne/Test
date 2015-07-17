@@ -35,10 +35,6 @@ public class PinchZoom : TouchLogic {
 
 	void Zoom()
 	{
-		//GUIStyle style = new GUIStyle();
-		//style.normal.textColor = Color.red;
-		//GUI.Label (new Rect (100, 100, 50, 20), "Zoom invoked!!", style);
-
 		switch (TouchLogic.currTouch) 
 		{
 		case 0:

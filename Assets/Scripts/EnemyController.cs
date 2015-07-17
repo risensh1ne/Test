@@ -16,6 +16,7 @@ public class EnemyController : MonoBehaviour {
 
 	bool isMoving = false;
 	bool isAttacking = false;
+	bool isDead = false;
 
 	Animator anim;
 
@@ -29,9 +30,27 @@ public class EnemyController : MonoBehaviour {
 		}
 	}
 
+	void OnParticleCollision(GameObject other)
+	{
+		if (other.name == "Fireball") {
+			damage (20.0f);
+			StartCoroutine("PoolObjectBack", other);
+		}
+	}
+
+	IEnumerator PoolObjectBack(GameObject obj)
+	{
+		yield return new WaitForSeconds(3);
+		ObjectPool.instance.PoolObject(obj);
+
+		GameObject.Find ("Player").GetComponent<PlayerController> ().specialAttack3start = false;
+	}
+
 	void Die()
 	{
-		Destroy (gameObject);
+		isDead = true;
+		anim.SetBool ("isDead", true);
+		Destroy (gameObject, 10.0f);
 	}
 
 	// Use this for initialization
@@ -43,6 +62,9 @@ public class EnemyController : MonoBehaviour {
 	void Update () 
 	{
 		if (anim == null)
+			return;
+
+		if (isDead)
 			return;
 
 		GameObject player = GameObject.FindGameObjectWithTag("Player");
