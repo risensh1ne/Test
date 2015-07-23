@@ -59,6 +59,11 @@ public class ObjectPool : MonoBehaviour
 			{
 				GameObject newObj = Instantiate(objectPrefab) as GameObject;
 				newObj.name = objectPrefab.name;
+
+				if (newObj.name == "minion_alpha")
+					newObj.GetComponent<MinionController>().setTeam(GameManager.team.ALPHA);
+				else if (newObj.name == "minion_beta")
+					newObj.GetComponent<MinionController>().setTeam(GameManager.team.BETA);
 				PoolObject(newObj);
 			}
 			

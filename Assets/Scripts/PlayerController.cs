@@ -66,7 +66,14 @@ public class PlayerController : MonoBehaviour {
 		minXValue = healthBarTransform.position.x - healthBarTransform.rect.width;
 		currentHealth = maxHealth;
 	}
-	
+
+	void OnParticleCollision(GameObject other)
+	{
+		if (other.name == "Fireball") {
+			damage (5.0f);
+		}
+	}
+
 	// Update is called once per frame
 	void FixedUpdate () {
 
