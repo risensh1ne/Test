@@ -3,7 +3,7 @@ using System.Collections;
 
 public class GameManager : MonoBehaviour {
 
-	public float spawnPeriod = 3.0f;
+	public float spawnPeriod = 2.0f;
 	float nextSpawnRemaining;
 
 	public enum team { ALPHA, BETA };
@@ -18,16 +18,17 @@ public class GameManager : MonoBehaviour {
 	IEnumerator SpawnMinion() {
 
 		yield return new WaitForSeconds (1.0f);
-
+/*
 		GameObject minionAlpha = ObjectPool.instance.GetObjectForType ("minion_alpha", true);
 		if (minionAlpha != null) {
 			minionAlpha.GetComponent<MinionController>().OnSpawn();
 		}
-
+*/
 		GameObject minionBeta = ObjectPool.instance.GetObjectForType ("minion_beta", true);
 		if (minionBeta != null) {
 			minionBeta.GetComponent<MinionController>().OnSpawn();
 		}
+
 	}
 	
 	// Update is called once per frame

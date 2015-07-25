@@ -43,7 +43,7 @@ public class EnemyController : MonoBehaviour {
 		yield return new WaitForSeconds(3);
 		ObjectPool.instance.PoolObject(obj);
 
-		GameObject.Find ("Player").GetComponent<PlayerController> ().specialAttack3start = false;
+		//GameObject.Find ("Player").GetComponent<PlayerController> ().specialAttack3start = false;
 	}
 
 	void Die()

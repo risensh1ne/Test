@@ -361,17 +361,7 @@ ModelImporter:
     optimizeGameObjects: 0
     motionNodeName: 
     animationImportErrors: 
-    animationImportWarnings: 'MuscleClip ''FUCM05_0022_M_RISING_P'' conversion warning:
-      ''Character1_Reference/Character1_Hips/Character1_Spine'' is between humanoid
-      transforms and has rotation animation. This might lower retargeting quality.
-
-
-      MuscleClip ''FUCM05_0022_M_RISING_P'' conversion warning: ''Character1_Reference/Character1_Hips/Character1_Spine/Character1_Spine1/Character1_Spine2/Character1_RightShoulder''
-      is between humanoid transforms and has rotation animation. This might lower
-      retargeting quality.
-
-
-'
+    animationImportWarnings: 
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     animationCompression: 3
@@ -405,7 +395,7 @@ ModelImporter:
       curves: []
       events:
       - time: .392550141
-        functionName: OnSpecialAttack2
+        functionName: OnSkill1Start
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0

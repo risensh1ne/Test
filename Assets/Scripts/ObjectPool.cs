@@ -64,6 +64,7 @@ public class ObjectPool : MonoBehaviour
 					newObj.GetComponent<MinionController>().setTeam(GameManager.team.ALPHA);
 				else if (newObj.name == "minion_beta")
 					newObj.GetComponent<MinionController>().setTeam(GameManager.team.BETA);
+
 				PoolObject(newObj);
 			}
 			

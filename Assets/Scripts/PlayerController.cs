@@ -3,19 +3,23 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : MonoBehaviour, IPlayer {
 	
 	float moveSpeed = 3.0f;
-	float attackDistance = 1.0f;
-	bool isMoving = false;
-	bool isAttacking = false;
-		
-	bool specialAttack1start = false;
-	bool specialAttack2start = false;
-	public bool specialAttack3start = false;
+	float attackRange = 1.0f;
+	float lookRange = 5.0f;
+
+	public float skill1AttackRange = 1.5f;
+
+	public GameManager.team attachedTeam;
+
+	bool attackSelection = false;
+	bool skill1start = false;
+	bool skil2start = false;
+	public bool skill3start = false;
 
 	private Vector3 destinationPos;
-	Transform targetEnemy;
+	public GameObject targetEnemy;
 
 	public Transform fireballPrefab;
 
@@ -47,7 +51,31 @@ public class PlayerController : MonoBehaviour {
 
 	private Animator anim;
 
+	bool bWalking;
+	bool bAttacking;
+	bool bDead;
+	
+	public bool isMoving 
+	{
+		get { return bWalking; }
+		set { bWalking = value; }
+	}
+	
+	public bool isAttacking 
+	{
+		get { return bAttacking; }
+		set { bAttacking = value; }
+	}
+	
+	public bool isDead 
+	{
+		get { return bDead; }
+		set { bDead = value; }
+	}
 
+	public GameManager.team checkTeam() {
+		return attachedTeam;
+	}
 
 	// Use this for initialization
 	void Start () {
@@ -61,6 +89,8 @@ public class PlayerController : MonoBehaviour {
 			return;
 		}
 
+		attachedTeam = GameManager.team.BETA;
+
 		cachedY = healthBarTransform.position.y;
 		maxXValue = healthBarTransform.position.x;
 		minXValue = healthBarTransform.position.x - healthBarTransform.rect.width;
@@ -73,67 +103,133 @@ public class PlayerController : MonoBehaviour {
 			damage (5.0f);
 		}
 	}
-
+	
 	// Update is called once per frame
 	void FixedUpdate () {
 
-		if (specialAttack1start)
-			return;
-
 		if (Input.GetMouseButtonDown (0)) {
+
+			if (EventSystem.current.IsPointerOverGameObject())
+				return;
 
 			Vector3 eventPos = ScreenToWorld (new Vector2 (Input.mousePosition.x, Input.mousePosition.y));
 			eventPos.y = transform.position.y;
-			
-			RaycastHit hitInfo = new RaycastHit ();
-			bool hit = Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out hitInfo);
 
-		
-			if (hit && hitInfo.transform.gameObject.tag == "enemy") {
-				targetEnemy = hitInfo.transform;
+			if (attackSelection) {
+
+				int enemyIndex = -1;
+				float enemyDistance = 0;
+				Vector3 direction;
+
+				Collider[] cldrs = Physics.OverlapSphere (transform.position, lookRange);
+				if (cldrs.Length > 0) {
+					for (int i=0; i < cldrs.Length; i++) {
+						
+						bool isTarget = false;
+						if (cldrs [i].tag == "Player" || cldrs [i].tag == "minion" || cldrs [i].tag == "defender") {
+							IPlayer ip = cldrs [i].gameObject.GetComponent<IPlayer>();
+							if (attachedTeam != ip.checkTeam())
+								isTarget = true;
+						}
+						
+						if (isTarget) {
+							float dist = Vector3.Distance (cldrs [i].transform.position, transform.position);
+							if (enemyDistance == 0 || dist < enemyDistance) {
+								enemyDistance = dist;
+								enemyIndex = i;
+							}
+						}
+					}
+				}
 				
-				if (Vector3.Distance (transform.position, targetEnemy.position) < attackDistance) {
-					isMoving = false;
-					isAttacking = true;
+				if (enemyIndex >= 0) {
+					targetEnemy = cldrs [enemyIndex].gameObject;
+					IPlayer ip = targetEnemy.GetComponent<IPlayer>();
+					
+					if (!ip.isDead) {
+						if (enemyDistance <= attackRange) {
+							if (!isAttacking) {
+								direction = (targetEnemy.transform.position - transform.position).normalized;
+								transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+								transform.rotation = Quaternion.LookRotation (direction);
+
+								isAttacking = true;
+								anim.SetBool ("isAttacking", true);
+							}
+						} else {
+							if (isAttacking) {
+								isAttacking = false;
+								anim.SetBool ("isAttacking", false);
+							} else {
+								direction = (cldrs [enemyIndex].transform.position - transform.position).normalized;
+								transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+								transform.rotation = Quaternion.LookRotation (direction);
+							}
+						}
+					} else {
+						direction = (eventPos - transform.position).normalized;
+						transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+						transform.rotation = Quaternion.LookRotation (direction);
+						
+						targetEnemy = null;
+						if (isAttacking) {
+							isAttacking = false;
+							anim.SetBool ("isAttacking", false);
+						}
+					}
 				} else {
-					isMoving = true;
-					isAttacking = true;
-					destinationPos = targetEnemy.position;
-				}
-			} else {
-				targetEnemy = null;
-				float _distance = Vector3.Distance (transform.position, eventPos);
-				if (_distance > 0.1) {
-					isMoving = true;
+					direction = (eventPos - transform.position).normalized;
+					transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+					transform.rotation = Quaternion.LookRotation (direction);
 					
-					if (isAttacking) 
+					targetEnemy = null;
+					if (isAttacking) {
 						isAttacking = false;
+						anim.SetBool ("isAttacking", false);
+					}
 					
-					destinationPos = eventPos;
+					
+				}
+
+				attackSelection = false;
+				transform.Find("attack_range").gameObject.SetActive (false);
+
+			} else {
+				RaycastHit hitInfo = new RaycastHit ();
+				bool hit = Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out hitInfo);
+
+				if (hit && (hitInfo.transform.gameObject.tag == "minion" || hitInfo.transform.gameObject.tag == "defender")) {
+
+					targetEnemy = hitInfo.transform.gameObject;
+
+					if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
+						isMoving = false;
+						isAttacking = true;
+					} else {
+						isMoving = true;
+						isAttacking = false;
+						destinationPos = targetEnemy.transform.position;
+					}
+				} else {
+					targetEnemy = null;
+					float _distance = Vector3.Distance (transform.position, eventPos);
+					if (_distance > 0.1) {
+						isMoving = true;
+						
+						if (isAttacking) 
+							isAttacking = false;
+						
+						destinationPos = eventPos;
+					}
 				}
 			}
-		} else if (Input.GetKeyDown (KeyCode.A)) {
-			if (targetEnemy != null && specialAttack1start == false) {
-				specialAttack1start = true;
-				anim.SetTrigger ("special01");
-				return;
-			}
-		} else if (Input.GetKeyDown (KeyCode.S)) {
-			if (targetEnemy != null && specialAttack2start == false) {
-				specialAttack2start = true;
-				anim.SetTrigger ("special02");
-			}
-		} else if (Input.GetKeyDown (KeyCode.W)) {
-			OnSpecialAttack3();
-
-
 		}
 		
 		if (isMoving || isAttacking) {
 			float distance = Vector3.Distance (transform.position, destinationPos);
 			
 			if (targetEnemy != null) {
-				if (Vector3.Distance (transform.position, targetEnemy.position) < attackDistance) {
+				if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
 					isMoving = false;
 					isAttacking = true;
 				} else {
@@ -179,6 +275,9 @@ public class PlayerController : MonoBehaviour {
 
 	public void damage(float d)
 	{
+		if (isDead)
+			return;
+
 		if (CurrentHealth - 5 < 0)
 			CurrentHealth = 0;
 		else
@@ -211,11 +310,9 @@ public class PlayerController : MonoBehaviour {
 	{
 		DamageEnemy (10.0f);
 	}
-	
-	void OnSpecialAttack1()
-	{
-		DamageEnemy (40.0f);
-	}
+
+	/*
+
 
 	void OnSpecialAttack1End()
 	{
@@ -230,38 +327,56 @@ public class PlayerController : MonoBehaviour {
 	{
 		DamageEnemy (20.0f);
 		specialAttack2start = false;
-
-
 	}
 
 	void OnSpecialAttack2End()
 	{
 		specialAttack2start = false;
 	}
-
-	public void OnSpecialAttack3()
+*/
+	public void SelectAttackTarget()
 	{
-		if (specialAttack3start)
+		attackSelection = true;
+		transform.Find("attack_range").gameObject.SetActive (true);
+
+	}
+
+	void OnSkill1Start()
+	{
+		DamageEnemy (40.0f);
+		skill1start = false;
+	}
+
+	public void OnSkill1()
+	{
+		if (skill1start)
 			return;
-		specialAttack3start = true;
 
 		if (targetEnemy != null) {
 			Vector3 dir = (destinationPos - transform.position).normalized;
 
-			GameObject fireballObj = ObjectPool.instance.GetObjectForType ("Fireball", true);
-			if (fireballObj != null) {
-				fireballObj.transform.position = firePoint.position;
-				fireballObj.transform.rotation = Quaternion.LookRotation (dir);
-				//Instantiate(fireballPrefab, firePoint.position, Quaternion.LookRotation (dir));
-			}
+			skill1start = true;
+			anim.SetBool ("skill01", true);
 		}
 	}
 
 	
 	void DamageEnemy(float damage)
 	{
-		
-		targetEnemy.gameObject.GetComponent<EnemyController>().damage (damage);
+		if (targetEnemy != null) {
+			IPlayer ip = targetEnemy.gameObject.GetComponent<IPlayer> ();
+
+			if (ip.isDead) {
+				targetEnemy = null;
+				isAttacking = false;
+				isMoving = false;
+				anim.SetBool ("isAttacking", false);
+				anim.SetBool ("isMoving", false);
+			} else {
+				ip.damage (damage);
+			}
+		}
+
 	}
 	
 	void OnGUI()

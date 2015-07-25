@@ -20,7 +20,7 @@ public class CameraControl : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		Vector3 PlayerPOS = GameObject.Find("Player").transform.transform.position;	
-		transform.position = new Vector3(PlayerPOS.x, 5, PlayerPOS.z - DistanceDefault);
+		transform.position = new Vector3(PlayerPOS.x, 8, PlayerPOS.z - DistanceDefault);
 	}
 	
 	// Update is called once per frame
@@ -38,7 +38,7 @@ public class CameraControl : MonoBehaviour {
 		}
 
 		Vector3 PlayerPOS = GameObject.Find("Player").transform.transform.position;
-		transform.position =  new Vector3(PlayerPOS.x, 5, PlayerPOS.z - (DistanceDefault + DistanceAway));
+		transform.position =  new Vector3(PlayerPOS.x, 8, PlayerPOS.z - (DistanceDefault + DistanceAway));
 
 
 	}
