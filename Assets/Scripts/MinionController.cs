@@ -66,9 +66,8 @@ public class MinionController : MonoBehaviour, IPlayer {
 		isMoving = false;
 		isAttacking = false;
 
-
 		health = 50.0f;
-		walkSpeed = 5.0f;
+		walkSpeed = 2.0f;
 
 		anim = GetComponent<Animator> ();
 		anim.SetBool ("isWalking", true);

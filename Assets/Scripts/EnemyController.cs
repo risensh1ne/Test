@@ -127,10 +127,6 @@ public class EnemyController : MonoBehaviour {
 		GUI.DrawTexture (new Rect (0, 0, healthBarSize.x * (currentHealth / 100), healthBarSize.y), progressBarHealth);
 		GUI.EndGroup();
 		GUI.EndGroup ();
-
-		GameObject player = GameObject.FindGameObjectWithTag("Player");
-		float distance = Vector3.Distance (transform.position, player.transform.position);
-		GUI.Label (new Rect (100, 100, 50, 20), distance.ToString ());
 	}
 }
                                                                                                                                                                                                                                           

@@ -381,6 +381,7 @@ public class PlayerController : MonoBehaviour, IPlayer {
 	
 	void OnGUI()
 	{
+
 		Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
 		
 		GUI.BeginGroup (new Rect(pos.x - 30, Screen.height - pos.y - 90, healthBarSize.x, healthBarSize.y));

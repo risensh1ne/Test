@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour {
 	IEnumerator SpawnMinion() {
 
 		yield return new WaitForSeconds (1.0f);
-/*
+		/*
 		GameObject minionAlpha = ObjectPool.instance.GetObjectForType ("minion_alpha", true);
 		if (minionAlpha != null) {
 			minionAlpha.GetComponent<MinionController>().OnSpawn();

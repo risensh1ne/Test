@@ -360,7 +360,21 @@ ModelImporter:
     bakeSimulation: 0
     optimizeGameObjects: 0
     motionNodeName: 
-    animationCompression: 1
+    animationImportErrors: 
+    animationImportWarnings: 'MuscleClip ''FUCM05_0001_M_CMN_LJAB'' conversion warning:
+      ''Character1_Reference/Character1_Hips/Character1_Spine'' is between humanoid
+      transforms and has rotation animation. This might lower retargeting quality.
+
+
+      MuscleClip ''FUCM05_0001_M_CMN_LJAB'' conversion warning: ''Character1_Reference/Character1_Hips/Character1_Spine/Character1_Spine1/Character1_Spine2/Character1_LeftShoulder''
+      is between humanoid transforms and has rotation animation. This might lower
+      retargeting quality.
+
+
+'
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 3
     animationRotationError: .5
     animationPositionError: .5
     animationScaleError: .5

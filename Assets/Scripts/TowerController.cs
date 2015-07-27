@@ -13,6 +13,11 @@ public class TowerController : MonoBehaviour, IPlayer {
 	public GameManager.team attachedTeam;
 	public GameObject targetEnemy;
 
+	Vector2 healthBarSize = new Vector2(50, 5);
+	
+	public Texture2D progressBarBack;
+	public Texture2D progressBarHealth;
+
 	public GameManager.team checkTeam() {
 		return attachedTeam;
 	}
@@ -54,6 +59,19 @@ public class TowerController : MonoBehaviour, IPlayer {
 		firePoint = transform.Find ("TowerFirePoint");
 	}
 
+	void OnGUI()
+	{
+		Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
+		
+		GUI.BeginGroup (new Rect(pos.x - 30, Screen.height - pos.y - 90, healthBarSize.x, healthBarSize.y));
+		GUI.DrawTexture (new Rect (0, 0, healthBarSize.x, healthBarSize.y), progressBarBack);
+		
+		GUI.BeginGroup (new Rect(0, 0, healthBarSize.x * (health / 100), healthBarSize.y));
+		GUI.DrawTexture (new Rect (0, 0, healthBarSize.x * (health / 100), healthBarSize.y), progressBarHealth);
+		GUI.EndGroup();
+		GUI.EndGroup ();	
+	}
+
 	// Update is called once per frame
 	void Update () {
 		
@@ -73,7 +91,7 @@ public class TowerController : MonoBehaviour, IPlayer {
 				bool isTarget = false;
 				if (cldrs [i].tag == "Player" || cldrs [i].tag == "minion") {
 					IPlayer ip = cldrs [i].gameObject.GetComponent<IPlayer>();
-					if (attachedTeam != ip.checkTeam())
+					if (attachedTeam != ip.checkTeam() && !ip.isDead)
 						isTarget = true;
 				}
 				
