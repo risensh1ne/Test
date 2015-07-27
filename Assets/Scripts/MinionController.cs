@@ -113,7 +113,6 @@ public class MinionController : MonoBehaviour, IPlayer {
 			return;
 
 		health -= d;
-		Debug.Log (health);
 		if (health <= 0) {
 			StartCoroutine("Die");
 		}

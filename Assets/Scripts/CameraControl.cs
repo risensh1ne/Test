@@ -19,7 +19,7 @@ public class CameraControl : MonoBehaviour {
 	float DistanceDefault = 10;
 	// Use this for initialization
 	void Start () {
-		Vector3 PlayerPOS = GameObject.Find("Player").transform.transform.position;	
+		Vector3 PlayerPOS = GameObject.Find("Gion(Clone)").transform.transform.position;	
 		transform.position = new Vector3(PlayerPOS.x, 8, PlayerPOS.z - DistanceDefault);
 	}
 	
@@ -37,7 +37,7 @@ public class CameraControl : MonoBehaviour {
 
 		}
 
-		Vector3 PlayerPOS = GameObject.Find("Player").transform.transform.position;
+		Vector3 PlayerPOS = GameObject.Find("Gion(Clone)").transform.transform.position;
 		transform.position =  new Vector3(PlayerPOS.x, 8, PlayerPOS.z - (DistanceDefault + DistanceAway));
 
 

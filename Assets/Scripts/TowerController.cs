@@ -85,7 +85,6 @@ public class TowerController : MonoBehaviour, IPlayer {
 
 		Collider[] cldrs = Physics.OverlapSphere (firePoint.position, attackRange);
 		if (cldrs.Length > 0 && !isAttacking) {
-			
 			for (int i=0; i < cldrs.Length; i++) {
 				
 				bool isTarget = false;
