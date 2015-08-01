@@ -30,8 +30,8 @@ public class GameManager : MonoBehaviour {
 		heroObj.transform.position = alphaHome.transform.position;
 		heroObj.GetComponent<HeroController>().destinationPos = betaHome.transform.position;
 
-		//nextSpawnRemaining = spawnPeriod;
-		//StartCoroutine ("SpawnMinion");
+		nextSpawnRemaining = spawnPeriod;
+		StartCoroutine ("SpawnMinion");
 
 	}
 
@@ -53,13 +53,13 @@ public class GameManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		/*
+
 		nextSpawnRemaining -= Time.deltaTime;
 
 		if (nextSpawnRemaining <= 0) {
 			nextSpawnRemaining = spawnPeriod;
 			StartCoroutine ("SpawnMinion");
 		}
-*/
+
 	}
 }

@@ -26,34 +26,6 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate () {
 
-
-		/*
-		if (isMoving || isAttacking) {
-			float distance = Vector3.Distance (transform.position, destinationPos);
-			
-			if (targetEnemy != null) {
-				if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
-					isMoving = false;
-					isAttacking = true;
-				} else {
-					Vector3 dir = (destinationPos - transform.position).normalized;
-					
-					transform.position += dir * Time.fixedDeltaTime * moveSpeed;
-					transform.rotation = Quaternion.LookRotation (dir);
-				}
-			} else {
-				if (distance > 0.1) {
-					Vector3 dir = (destinationPos - transform.position).normalized;
-					
-					transform.position += dir * Time.fixedDeltaTime * moveSpeed;
-					transform.rotation = Quaternion.LookRotation (dir);
-				} else {
-					isMoving = false;
-					isAttacking = false;
-				}
-			}
-		} 
-		*/
 	}
 
 	public void updateHealthBar()
@@ -89,7 +61,14 @@ public class PlayerController : MonoBehaviour {
 			return;
 		}
 		attackSelection = mode;
-		player.transform.Find("attack_range").gameObject.SetActive (mode);
+		Transform obj = player.transform.Find ("attack_range");
+		Vector3 newScale = new Vector3 ();
+		newScale.x = obj.transform.localScale.x * 10;
+		newScale.y = 0.01f;
+		newScale.z = obj.transform.localScale.z * 10;
+		obj.transform.localScale = newScale;
+
+		obj.gameObject.SetActive (mode);
 	}
 	
 }

@@ -134,9 +134,8 @@ public class MinionController : MonoBehaviour, IPlayer {
 
 	void OnParticleCollision(GameObject other)
 	{
-		Debug.Log ("!!!");
 		if (other.name == "Fireball") {
-			damage (20.0f);
+			damage (40.0f);
 		}
 	}
 
