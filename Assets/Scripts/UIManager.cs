@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 
@@ -26,6 +26,10 @@ public class UIManager : MonoBehaviour {
 	public float skill2Cooldown = 5.0f;
 	public float skill2CooldownCurrent;
 
+	public Sprite[] heroIcons;
+
+	public Texture2D progressBarBack, progressBarHealth;
+
 	// Use this for initialization
 	void Start () {
 		player = gameObject.GetComponent<GameManager> ().player;
@@ -35,6 +39,8 @@ public class UIManager : MonoBehaviour {
 		}
 
 		autoAttack = false;
+
+		//skill1_btn.transform = new Vector3 (1 / 10, 1 / 10, 0);
 	}
 
 	public void OnNormalAttackBtnClicked()
@@ -44,8 +50,10 @@ public class UIManager : MonoBehaviour {
 		} else {
 			autoAttackBtn.GetComponent<Image> ().sprite = attackSprite;
 		}
-		autoAttack = !autoAttack;
 		player.GetComponent<HeroController> ().SetAutoAttackMode (autoAttack);
+		autoAttack = !autoAttack;
+		
+		//gameObject.GetComponent<PlayerController>().attackTargetSelectionMode (true);
 	}
 
 	public void OnSkill1BtnClicked()
@@ -63,17 +71,35 @@ public class UIManager : MonoBehaviour {
 	void OnGUI()
 	{
 
-	}
+		Texture t1 = heroIcons [0].texture;
 
-	void SetSkillCooldown(int skill)
-	{
-		if (skill == 1) {
-			skill1CooldownCurrent = skill1Cooldown;
-		} else if (skill == 2) {
-			skill2CooldownCurrent = skill2Cooldown;
+		GUI.DrawTexture (new Rect (20, 50, 50, 50), t1);
+		if (player.GetComponent<IPlayer> ().isDead) {
+			GUIStyle stl = new GUIStyle();
+			stl.fontSize = 8;
+			stl.fontStyle = FontStyle.Bold;
+
+			GUI.Label (new Rect(25, 70, 100, 20), "Respawning", stl);
 		}
+		GUI.DrawTexture (new Rect (20, 100, 50, 10), progressBarBack);
+		GUI.DrawTexture (new Rect (20, 100, 50 * (player.GetComponent<HeroController>().health / 100), 10), progressBarHealth);
 
+		Texture t2 = heroIcons [1].texture;
+		GUI.DrawTexture (new Rect (Screen.width - 70, 50, 50, 50), t2);
+		GameObject hero = gameObject.GetComponent<GameManager> ().getHeroObj ("SwordMaster");
+		if (hero != null) {
+			if (hero.GetComponent<IPlayer> ().isDead) {
+				GUIStyle stl = new GUIStyle ();
+				stl.fontSize = 8;
+				stl.fontStyle = FontStyle.Bold;
+				
+				GUI.Label (new Rect (25, 70, 100, 20), "Respawning", stl);
+			}
+			GUI.DrawTexture (new Rect (20, 100, 50, 10), progressBarBack);
+			GUI.DrawTexture (new Rect (20, 100, 50 * (hero.GetComponent<HeroController> ().health / 100), 10), progressBarHealth);
+		}
 	}
+
 
 	// Update is called once per frame
 	void Update () {
@@ -86,23 +112,40 @@ public class UIManager : MonoBehaviour {
 		if (skill1CooldownCurrent > 0) {
 			skill1CooldownCurrent -= Time.deltaTime;
 			skill1_cooldown_obj.GetComponent<Image> ().fillAmount = (skill1Cooldown - skill1CooldownCurrent) / skill1Cooldown;
-			skill1_btn.GetComponent<Button> ().interactable = true;
 		} else {
 			skill1CooldownCurrent = 0;
 			skill1_cooldown_obj.GetComponent<Image> ().fillAmount = 0;
-			skill1_btn.GetComponent<Button> ().interactable = true;
 		}
 
 		if (skill2CooldownCurrent > 0) {
 			skill2CooldownCurrent -= Time.deltaTime;
 			skill2_cooldown_obj.GetComponent<Image> ().fillAmount = (skill2Cooldown - skill2CooldownCurrent) / skill2Cooldown;
-			skill2_btn.GetComponent<Button> ().interactable = false;
 		} else {
 			skill2CooldownCurrent = 0;
 			skill2_cooldown_obj.GetComponent<Image> ().fillAmount = 0;
-			skill2_btn.GetComponent<Button> ().interactable = true;
 		}
 
+		GameObject targetEnemy = player.GetComponent<HeroController> ().targetEnemy;
 
+		/*
+		if (targetEnemy != null) {
+			float dist = Vector3.Distance (player.transform.position, targetEnemy.transform.position);
+
+			if (dist <= player.GetComponent<HeroController> ().skill1AttackRange &&
+				skill1CooldownCurrent == 0)
+				skill1_btn.GetComponent<Button> ().interactable = true;
+			else 
+				skill1_btn.GetComponent<Button> ().interactable = false;
+
+			if (dist <= player.GetComponent<HeroController> ().skill2AttackRange &&
+				skill2CooldownCurrent == 0)
+				skill2_btn.GetComponent<Button> ().interactable = true;
+			else 
+				skill2_btn.GetComponent<Button> ().interactable = false;
+		} else {
+			skill1_btn.GetComponent<Button> ().interactable = false;
+			skill2_btn.GetComponent<Button> ().interactable = false;
+		}
+		*/
 	}
 }
