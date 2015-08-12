@@ -13,6 +13,8 @@ public class MinionController : MonoBehaviour, IPlayer {
 	
 	public GameManager.team attachedTeam;
 
+	private float my_exp_val = 100.0f;
+
 	GameObject alphaHome;
 	GameObject betaHome;
 
@@ -21,6 +23,8 @@ public class MinionController : MonoBehaviour, IPlayer {
 	bool bWalking;
 	bool bAttacking;
 	bool bDead;
+
+	private GameObject lastAttackedBy;
 
 	Animator anim;
 
@@ -46,7 +50,10 @@ public class MinionController : MonoBehaviour, IPlayer {
 		set { bDead = value; }
 	}
 
-
+	public void SetAttacker(GameObject attacker)
+	{
+		lastAttackedBy = attacker;
+	}
 
 	// Use this for initialization
 	void Start () {
@@ -65,6 +72,8 @@ public class MinionController : MonoBehaviour, IPlayer {
 		isDead = false;
 		isMoving = false;
 		isAttacking = false;
+
+		lastAttackedBy = null;
 
 		health = 50.0f;
 		walkSpeed = 2.0f;
@@ -127,6 +136,10 @@ public class MinionController : MonoBehaviour, IPlayer {
 		anim.SetBool ("isAttacking", false);
 		anim.SetBool ("isWalking", false);
 		anim.SetBool ("isDead", true);
+
+		if (lastAttackedBy.tag == "Player") {
+			lastAttackedBy.GetComponent<HeroController>().GainExp(my_exp_val);
+		}
 
 		yield return new WaitForSeconds (5.0f);
 		ObjectPool.instance.PoolObject (gameObject);

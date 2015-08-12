@@ -12,6 +12,7 @@ public class TowerController : MonoBehaviour, IPlayer {
 
 	public GameManager.team attachedTeam;
 	public GameObject targetEnemy;
+	private GameObject lastAttackedBy;
 
 	Vector2 healthBarSize = new Vector2(50, 5);
 	
@@ -38,6 +39,11 @@ public class TowerController : MonoBehaviour, IPlayer {
 	{
 		get { return bDead; }
 		set { bDead = value; }
+	}
+
+	public void SetAttacker(GameObject attacker)
+	{
+		lastAttackedBy = attacker;
 	}
 
 	public void damage(float d)

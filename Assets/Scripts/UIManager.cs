@@ -59,6 +59,7 @@ public class UIManager : MonoBehaviour {
 	public void OnSkill1BtnClicked()
 	{
 		player.GetComponent<HeroController> ().ToggleSkillTargetMode(1, 2.0f);
+		player.GetComponent<HeroController> ().useMana (20.0f);
 		//skill1CooldownCurrent = skill1Cooldown;
 	}
 
@@ -93,10 +94,10 @@ public class UIManager : MonoBehaviour {
 				stl.fontSize = 8;
 				stl.fontStyle = FontStyle.Bold;
 				
-				GUI.Label (new Rect (25, 70, 100, 20), "Respawning", stl);
+				GUI.Label (new Rect (Screen.width - 65, 70, 100, 20), "Respawning", stl);
 			}
-			GUI.DrawTexture (new Rect (20, 100, 50, 10), progressBarBack);
-			GUI.DrawTexture (new Rect (20, 100, 50 * (hero.GetComponent<HeroController> ().health / 100), 10), progressBarHealth);
+			GUI.DrawTexture (new Rect (Screen.width - 70, 100, 50, 10), progressBarBack);
+			GUI.DrawTexture (new Rect (Screen.width - 70, 100, 50 * (hero.GetComponent<HeroController> ().health / 100), 10), progressBarHealth);
 		}
 	}
 

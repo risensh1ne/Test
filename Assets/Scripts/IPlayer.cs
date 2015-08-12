@@ -9,4 +9,5 @@ public interface IPlayer {
 
 	GameManager.team checkTeam();
 	void damage(float d);
+	void SetAttacker(GameObject attacker);
 }
