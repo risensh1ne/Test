@@ -5,6 +5,8 @@ using UnityEngine.EventSystems;
 
 public class HeroController : MonoBehaviour, IPlayer {
 
+	public enum CharacterState {STATE_IDLE, STATE_MOVING, STATE_ATTACKING};
+	public CharacterState curr_state;
 	public float moveSpeed = 5.0f;
 	public float health;
 	public float mana;
@@ -106,7 +108,34 @@ public class HeroController : MonoBehaviour, IPlayer {
 			anim.SetBool ("isDead", value);
 		}
 	}
-	
+
+	public void changeStateTo(CharacterState newState)
+	{
+		if (newState == CharacterState.STATE_ATTACKING) {
+			if (curr_state == CharacterState.STATE_MOVING) {
+				isMoving = false;
+				isAttacking = true;
+			} else if (curr_state == CharacterState.STATE_IDLE) {
+				isAttacking = true;
+			} 
+		} else if (newState == CharacterState.STATE_MOVING) {
+			if (curr_state == CharacterState.STATE_ATTACKING) {
+				isMoving = true;
+				isAttacking = false;
+			} else if (curr_state == CharacterState.STATE_IDLE) {
+				isMoving = true;
+			} 
+		} else if (newState == CharacterState.STATE_IDLE) {
+			if (curr_state == CharacterState.STATE_ATTACKING) {
+				isAttacking = false;
+			} else if (curr_state == CharacterState.STATE_MOVING) {
+				isMoving = false;
+			} 
+			destinationPos = -Vector3.one;
+		} 
+		curr_state = newState; 
+	}
+
 	public GameManager.team checkTeam() {
 		return attachedTeam;
 	}
@@ -156,6 +185,10 @@ public class HeroController : MonoBehaviour, IPlayer {
 
 	public void GainExp(float exp_val)
 	{
+		targetEnemy = null;
+		destinationPos = -Vector3.one;
+		changeStateTo (CharacterState.STATE_IDLE);
+
 		curr_exp_val += exp_val;
 	}
 
@@ -175,6 +208,8 @@ public class HeroController : MonoBehaviour, IPlayer {
 		isAttacking = false;
 		autoAttack = false;
 
+		curr_state = CharacterState.STATE_IDLE;
+		targetEnemy = null;
 		lastAttackedBy = null;
 
 		updateMaxStats ();
@@ -304,6 +339,62 @@ public class HeroController : MonoBehaviour, IPlayer {
 		if (isDead)
 			return;
 
+		if (Input.GetMouseButtonDown (0)) {
+		
+			if (EventSystem.current.IsPointerOverGameObject ())
+				return;
+			
+			Vector3 eventPos = ScreenToWorld (new Vector2 (Input.mousePosition.x, Input.mousePosition.y));
+			eventPos.y = transform.position.y;
+
+			destinationPos = eventPos;
+
+			targetEnemy = getClickedAttackTarget();
+		}
+
+		if (targetEnemy != null)
+			destinationPos = targetEnemy.transform.position;
+
+		if (destinationPos != -Vector3.one) {
+			Vector3 direction = (destinationPos - transform.position).normalized;
+
+			if (targetEnemy != null) {
+				if (curr_state != CharacterState.STATE_ATTACKING) {
+					if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
+						changeStateTo (CharacterState.STATE_ATTACKING);
+					} else {
+						transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+						transform.rotation = Quaternion.LookRotation (direction);	
+					}
+				}
+			} else {
+				targetEnemy = getNearestAttackTaget ();
+
+				if (targetEnemy != null) {
+					if (curr_state == CharacterState.STATE_IDLE)
+						changeStateTo (CharacterState.STATE_MOVING);	
+					transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+					transform.rotation = Quaternion.LookRotation (direction);	
+				} else {
+					if (Vector3.Distance (transform.position, destinationPos) < 0.1) {
+						changeStateTo (CharacterState.STATE_IDLE);
+					} else {
+						changeStateTo (CharacterState.STATE_MOVING);
+						transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+						transform.rotation = Quaternion.LookRotation (direction);	
+					}
+				}
+			}
+		} else {
+			targetEnemy = getNearestAttackTaget ();
+
+			if (targetEnemy != null) {
+				changeStateTo (CharacterState.STATE_MOVING);
+			}
+		}
+
+
+/*
 		if (isMine) {
 			if (Input.GetMouseButtonDown (0)) {
 
@@ -466,7 +557,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 				}
 			}
 		}
-
+*/
 	}
 
 	void DamageEnemy(float damage)

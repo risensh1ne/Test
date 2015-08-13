@@ -137,7 +137,7 @@ public class MinionController : MonoBehaviour, IPlayer {
 		anim.SetBool ("isWalking", false);
 		anim.SetBool ("isDead", true);
 
-		if (lastAttackedBy.tag == "Player") {
+		if (lastAttackedBy && lastAttackedBy.tag == "Player") {
 			lastAttackedBy.GetComponent<HeroController>().GainExp(my_exp_val);
 		}
 
