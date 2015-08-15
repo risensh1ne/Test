@@ -65,7 +65,6 @@ public class CameraControl : MonoBehaviour {
 
 		DistanceAway = Mathf.Clamp (Mathf.Lerp (DistanceAway, zoomFactor * zoomSpeed, Time.deltaTime), -2.0f, 8.0f);
 
-		Debug.Log ("distance:" + DistanceAway);
 
 	}
 }

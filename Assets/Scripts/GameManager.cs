@@ -62,12 +62,12 @@ public class GameManager : MonoBehaviour {
 		if (minionAlpha != null) {
 			minionAlpha.GetComponent<MinionController> ().OnSpawn ();
 		}
-
+/*
 		GameObject minionBeta = ObjectPool.instance.GetObjectForType ("minion_beta", true);
 		if (minionBeta != null) {
 			minionBeta.GetComponent<MinionController>().OnSpawn();
 		}
-
+*/
 	}
 	
 	// Update is called once per frame

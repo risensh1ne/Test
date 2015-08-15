@@ -43,6 +43,9 @@ public class PlayerController : MonoBehaviour {
 		if (player == null)
 			return;
 
+		IPlayer ip = player.GetComponent<IPlayer> ();
+		if (ip.isDead)
+			return;
 		regenTimer -= Time.fixedDeltaTime;
 		if (regenTimer <= 0) {
 			player.GetComponent<HeroController>().regenHealthMana();
@@ -62,7 +65,7 @@ public class PlayerController : MonoBehaviour {
 		float currentHealth = player.GetComponent<HeroController> ().health;
 		float currentXValue = MapValues (currentHealth, 0, healthbar_maxHealth, healthbar_minXValue, healthbar_maxXValue);
 
-		healthText.text = currentHealth + "/" + healthbar_maxHealth;
+		healthText.text = (int)currentHealth + "/" + healthbar_maxHealth;
 		healthBarTransform.position = new Vector3 (currentXValue, healthbar_cachedY);
 
 		if (currentHealth > healthbar_maxHealth / 2) {
@@ -82,7 +85,7 @@ public class PlayerController : MonoBehaviour {
 		float currentMana = player.GetComponent<HeroController> ().mana;
 		float currentXValue = MapValues (currentMana, 0, manabar_maxMana, manabar_minXValue, manabar_maxXValue);
 
-		manaText.text = currentMana + "/" + manabar_maxMana;
+		manaText.text = (int)currentMana + "/" + manabar_maxMana;
 		manaBarTransform.position = new Vector3 (currentXValue, manabar_cachedY);
 	}
 

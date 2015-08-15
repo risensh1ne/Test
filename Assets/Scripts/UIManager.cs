@@ -50,7 +50,7 @@ public class UIManager : MonoBehaviour {
 		} else {
 			autoAttackBtn.GetComponent<Image> ().sprite = attackSprite;
 		}
-		player.GetComponent<HeroController> ().SetAutoAttackMode (autoAttack);
+		//player.GetComponent<HeroController> ().SetAutoAttackMode (autoAttack);
 		autoAttack = !autoAttack;
 		
 		//gameObject.GetComponent<PlayerController>().attackTargetSelectionMode (true);

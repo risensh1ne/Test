@@ -18,7 +18,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 	Vector2 healthBarSize = new Vector2(50, 5);
 
 	public float attackRange = 1.5f;
-	public float lookRange = 10.0f;
+	public float lookRange = 5.0f;
 
 	public GameManager.team attachedTeam;
 
@@ -148,9 +148,12 @@ public class HeroController : MonoBehaviour, IPlayer {
 			return;
 
 		health -= d;
+		if (health <= 0) 
+			health = 0;
+
 		gm.GetComponent<PlayerController> ().updateHealthBar ();
 
-		if (health <= 0) {
+		if (health == 0) {
 			StartCoroutine("Die");
 		}
 	}
@@ -190,6 +193,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 		changeStateTo (CharacterState.STATE_IDLE);
 
 		curr_exp_val += exp_val;
+		gm.GetComponent<PlayerController> ().updateLevelText ();
 	}
 
 	IEnumerator Die()
@@ -269,17 +273,6 @@ public class HeroController : MonoBehaviour, IPlayer {
 		InitState ();
 	}
 
-	public void SetAutoAttackMode(bool _autoAttack)
-	{
-		autoAttack = _autoAttack;
-		
-		if (autoAttack) {
-			GameObject target = getNearestAttackTaget();
-			targetEnemy = target;
-			destinationPos = targetEnemy.transform.position;
-		}
-	}
-
 	public GameObject getNearestAttackTaget()
 	{
 		int enemyIndex = -1;
@@ -350,214 +343,44 @@ public class HeroController : MonoBehaviour, IPlayer {
 			destinationPos = eventPos;
 
 			targetEnemy = getClickedAttackTarget();
+			if (targetEnemy != null)
+				destinationPos = targetEnemy.transform.position;
 		}
-
-		if (targetEnemy != null)
-			destinationPos = targetEnemy.transform.position;
 
 		if (destinationPos != -Vector3.one) {
 			Vector3 direction = (destinationPos - transform.position).normalized;
 
 			if (targetEnemy != null) {
-				if (curr_state != CharacterState.STATE_ATTACKING) {
-					if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
-						changeStateTo (CharacterState.STATE_ATTACKING);
+				if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
+					changeStateTo (CharacterState.STATE_ATTACKING);
+				} else {
+					if (Vector3.Distance (transform.position, destinationPos) < 0.1) {		
+						changeStateTo (CharacterState.STATE_IDLE);
 					} else {
 						transform.position += direction * moveSpeed * Time.fixedDeltaTime;
 						transform.rotation = Quaternion.LookRotation (direction);	
 					}
 				}
 			} else {
-				targetEnemy = getNearestAttackTaget ();
-
-				if (targetEnemy != null) {
-					if (curr_state == CharacterState.STATE_IDLE)
-						changeStateTo (CharacterState.STATE_MOVING);	
-					transform.position += direction * moveSpeed * Time.fixedDeltaTime;
-					transform.rotation = Quaternion.LookRotation (direction);	
+				if (Vector3.Distance (transform.position, destinationPos) < 0.1) {
+					changeStateTo (CharacterState.STATE_IDLE);
 				} else {
-					if (Vector3.Distance (transform.position, destinationPos) < 0.1) {
-						changeStateTo (CharacterState.STATE_IDLE);
-					} else {
-						changeStateTo (CharacterState.STATE_MOVING);
-						transform.position += direction * moveSpeed * Time.fixedDeltaTime;
-						transform.rotation = Quaternion.LookRotation (direction);	
-					}
+					changeStateTo (CharacterState.STATE_MOVING);	
+					transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+					transform.rotation = Quaternion.LookRotation (direction);
 				}
 			}
 		} else {
-			targetEnemy = getNearestAttackTaget ();
 
+			targetEnemy = getNearestAttackTaget ();
 			if (targetEnemy != null) {
+				destinationPos = targetEnemy.transform.position;
 				changeStateTo (CharacterState.STATE_MOVING);
 			}
 		}
 
 
-/*
-		if (isMine) {
-			if (Input.GetMouseButtonDown (0)) {
-
-				if (EventSystem.current.IsPointerOverGameObject ())
-					return;
-					
-				Vector3 eventPos = ScreenToWorld (new Vector2 (Input.mousePosition.x, Input.mousePosition.y));
-				eventPos.y = transform.position.y;
-
-				if (skillTargetSelectionMode) {
-
-					GameObject target = getClickedAttackTarget();
-
-					if (target) {
-						targetEnemy = target;
-						destinationPos = targetEnemy.transform.position;
-
-						float enemyDistance = Vector3.Distance(target.transform.position, transform.position);
-						IPlayer ip = targetEnemy.GetComponent<IPlayer> ();
-
-						if (!ip.isDead) {
-							Vector3 direction = (targetEnemy.transform.position - transform.position).normalized;
-							transform.rotation = Quaternion.LookRotation (direction);
-
-							if (enemyDistance <= attackRange) {
-								if (!isAttacking) {
-									isAttacking = true;
-								}
-							} else {
-								transform.position += direction * moveSpeed * Time.fixedDeltaTime;
-							}
-						} else {
-							targetEnemy = null;
-							if (isAttacking) {
-								isAttacking = false;
-							}
-						}
-
-					} else {
-						Vector3 direction = (eventPos - transform.position).normalized;
-						transform.position += direction * moveSpeed * Time.fixedDeltaTime;
-						transform.rotation = Quaternion.LookRotation (direction);
-						
-						targetEnemy = null;
-						if (isAttacking) {
-							isAttacking = false;
-						}
-					}
-				} else { //skillTargetSelectionMode == false
-					if (getClickedAttackTarget() != null) {
-						destinationPos = targetEnemy.transform.position;
-						if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
-							isMoving = false;
-							isAttacking = true;
-						} else {
-							isMoving = true;
-							isAttacking = false;
-						}
-					} else {
-						float _distance = Vector3.Distance (transform.position, eventPos);
-						if (_distance > attackRange) {
-							isMoving = true;
-							
-							if (isAttacking) 
-								isAttacking = false;
-							
-							destinationPos = eventPos;
-						}
-					}						
-				}
-			} else {
-				if (autoAttack) {
-					if (targetEnemy != null) {
-						float distance = Vector3.Distance (transform.position, targetEnemy.transform.position);
-						Vector3 dir = (targetEnemy.transform.position - transform.position).normalized;
-						transform.rotation = Quaternion.LookRotation (dir);
-
-						if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
-							isMoving = false;
-							isAttacking = true;
-						} else {
-							transform.position += dir * Time.fixedDeltaTime * moveSpeed;
-						}
-					} else {
-						GameObject target = getNearestAttackTaget();
-
-						if (target != null) {
-							targetEnemy = target;
-							destinationPos = targetEnemy.transform.position;
-
-							float distance = Vector3.Distance (transform.position, targetEnemy.transform.position);
-							Vector3 dir = (targetEnemy.transform.position - transform.position).normalized;
-							transform.rotation = Quaternion.LookRotation (dir);
-							
-							if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
-								isMoving = false;
-								isAttacking = true;
-							} else {
-								transform.position += dir * Time.fixedDeltaTime * moveSpeed;
-							}
-						}
-					}
-				} else {
-					if (targetEnemy != null) {
-						float distance = Vector3.Distance (transform.position, targetEnemy.transform.position);
-						Vector3 dir = (targetEnemy.transform.position - transform.position).normalized;
-						transform.rotation = Quaternion.LookRotation (dir);
-						
-						if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
-							isMoving = false;
-							isAttacking = true;
-						} else {
-							transform.position += dir * Time.fixedDeltaTime * moveSpeed;
-						}
-					} else {
-						if (destinationPos == -Vector3.one)
-							return;
-
-						float distance = Vector3.Distance (transform.position, destinationPos);
-						if (distance > 0.1) {
-							isMoving = false;
-							isAttacking = false;
-
-							Vector3 dir = (destinationPos - transform.position).normalized;
-							transform.rotation = Quaternion.LookRotation (dir);
-							transform.position += dir * Time.fixedDeltaTime * moveSpeed;
-						}
-				
-					}
-				} 
-			}
-		} else {
-			if (autoAttack && targetEnemy != null) {
-				float enemyDistance = Vector3.Distance(targetEnemy.transform.position, transform.position);
-
-				if (enemyDistance <= attackRange) {
-					if (!isAttacking) {
-						isAttacking = true;
-					}
-				} else {
-					if (isAttacking) {
-						isAttacking = false;
-					} else {
-						Vector3 direction = (targetEnemy.transform.position - transform.position).normalized;
-						transform.position += direction * moveSpeed * Time.fixedDeltaTime;
-						transform.rotation = Quaternion.LookRotation (direction);
-					}
-				}
-			} else {
-				if (destinationPos != null) {
-					Vector3 direction = (destinationPos - transform.position).normalized;
-					transform.position += direction * moveSpeed * Time.fixedDeltaTime;
-					transform.rotation = Quaternion.LookRotation (direction);
-					
-					isMoving = true;
-					//targetEnemy = null;
-					if (isAttacking) {
-						isAttacking = false;
-					}
-				}
-			}
-		}
-*/
+	
 	}
 
 	void DamageEnemy(float damage)
@@ -590,8 +413,8 @@ public class HeroController : MonoBehaviour, IPlayer {
 			return;
 		
 		if (targetEnemy != null) {
-			Vector3 dir = (destinationPos - transform.position).normalized;
-			transform.rotation = Quaternion.LookRotation (dir);
+			//Vector3 dir = (destinationPos - transform.position).normalized;
+			//transform.rotation = Quaternion.LookRotation (dir);
 
 			skill1start = true;
 			anim.SetBool ("skill01", true);
@@ -654,7 +477,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 
 		if (isMine && targetEnemy != null) {
 			Vector3 enemyPos = targetEnemy.transform.position;
-			pos.y += 1;
+			enemyPos.y += 1;
 			Vector3 pos2 = Camera.main.WorldToScreenPoint (enemyPos);
 			GUI.Label (new Rect (pos2.x, pos2.y, 50, 50), targetEnemy.name);
 		}           
