@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class HeroController : MonoBehaviour, IPlayer {
 
@@ -18,7 +19,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 	Vector2 healthBarSize = new Vector2(50, 5);
 
 	public float attackRange = 1.5f;
-	public float lookRange = 5.0f;
+	public float lookRange = 3.0f;
 
 	public GameManager.team attachedTeam;
 
@@ -42,7 +43,10 @@ public class HeroController : MonoBehaviour, IPlayer {
 	{
 		Transform obj = transform.Find ("attack_range");
 
-		if (skillTargetSelectionMode && skill == selectedSkill) {
+		if (skill == 0) {
+			selectedSkill = 0;	
+			obj.gameObject.SetActive (false);
+		} else if (skillTargetSelectionMode && skill == selectedSkill) {
 			selectedSkill = 0;
 
 			obj.gameObject.SetActive (false);
@@ -174,9 +178,14 @@ public class HeroController : MonoBehaviour, IPlayer {
 	{
 		if (health < maxHealth)
 			health += healthRegenRate;
-
+		else {
+			health = maxHealth;
+		}
 		if (mana < maxMana)
 			mana += manaRegenRate;
+		else {
+			mana = maxMana;
+		}
 	}
 
 	void OnParticleCollision(GameObject other)
@@ -189,11 +198,13 @@ public class HeroController : MonoBehaviour, IPlayer {
 	public void GainExp(float exp_val)
 	{
 		targetEnemy = null;
-		destinationPos = -Vector3.one;
-		changeStateTo (CharacterState.STATE_IDLE);
 
 		curr_exp_val += exp_val;
+		if (curr_exp_val >= max_exp_val)
+			LevelUp ();
+
 		gm.GetComponent<PlayerController> ().updateLevelText ();
+		
 	}
 
 	IEnumerator Die()
@@ -249,8 +260,9 @@ public class HeroController : MonoBehaviour, IPlayer {
 		level++;
 		max_exp_val = 500.0f + (level - 1) * 500.0f;
 		curr_exp_val = 0;
-
+		
 		updateMaxStats ();
+		ResetStats ();
 
 		if (isMine) {
 			gm.GetComponent<PlayerController> ().updateHealthBar ();
@@ -273,7 +285,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 		InitState ();
 	}
 
-	public GameObject getNearestAttackTaget()
+	public GameObject getNearestAttackTarget()
 	{
 		int enemyIndex = -1;
 		float enemyDistance = 0;
@@ -285,7 +297,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 				bool isTarget = false;
 				if (cldrs [i].tag == "Player" || cldrs [i].tag == "minion" || cldrs [i].tag == "defender") {
 					IPlayer ip = cldrs [i].gameObject.GetComponent<IPlayer> ();
-					if (attachedTeam != ip.checkTeam ())
+					if (!ip.isDead && attachedTeam != ip.checkTeam ())
 						isTarget = true;
 				}
 				
@@ -303,6 +315,23 @@ public class HeroController : MonoBehaviour, IPlayer {
 		}
 
 		return null;
+	}
+
+	public GameObject[] getAttackTargetList(Vector3 targetPos, float range)
+	{
+		Collider[] cldrs = Physics.OverlapSphere (targetPos, range);
+
+		List<GameObject> objList = new List<GameObject> ();
+
+		for (int i=0; i < cldrs.Length; i++) {
+			if (cldrs [i].tag == "Player" || cldrs [i].tag == "minion" || cldrs [i].tag == "defender") {
+				IPlayer ip = cldrs [i].gameObject.GetComponent<IPlayer> ();
+				if (!ip.isDead && attachedTeam != ip.checkTeam ())
+					objList.Add (cldrs [i].transform.gameObject);
+			}
+		}
+
+		return objList.ToArray();
 	}
 
 	public GameObject getClickedAttackTarget()
@@ -323,6 +352,17 @@ public class HeroController : MonoBehaviour, IPlayer {
 		return null;
 	}
 
+	private bool IsPointerOverUIObject() {
+		// Referencing this code for GraphicRaycaster https://gist.github.com/stramit/ead7ca1f432f3c0f181f
+		// the ray cast appears to require only eventData.position.
+		PointerEventData eventDataCurrentPosition = new PointerEventData(EventSystem.current);
+		eventDataCurrentPosition.position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+		
+		List<RaycastResult> results = new List<RaycastResult>();
+		EventSystem.current.RaycastAll(eventDataCurrentPosition, results);
+		return results.Count > 0;
+	}
+
 	// Update is called once per frame
 	void FixedUpdate () 
 	{
@@ -332,54 +372,82 @@ public class HeroController : MonoBehaviour, IPlayer {
 		if (isDead)
 			return;
 
-		if (Input.GetMouseButtonDown (0)) {
-		
-			if (EventSystem.current.IsPointerOverGameObject ())
-				return;
-			
-			Vector3 eventPos = ScreenToWorld (new Vector2 (Input.mousePosition.x, Input.mousePosition.y));
-			eventPos.y = transform.position.y;
+		if (skill2start || skill3start)
+			return;
 
-			destinationPos = eventPos;
+		if (Input.GetMouseButtonDown(0)) {
+		/*
+			bool isPointerOverGameObject = false;
 
-			targetEnemy = getClickedAttackTarget();
-			if (targetEnemy != null)
-				destinationPos = targetEnemy.transform.position;
-		}
-
-		if (destinationPos != -Vector3.one) {
-			Vector3 direction = (destinationPos - transform.position).normalized;
-
-			if (targetEnemy != null) {
-				if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
-					changeStateTo (CharacterState.STATE_ATTACKING);
-				} else {
-					if (Vector3.Distance (transform.position, destinationPos) < 0.1) {		
-						changeStateTo (CharacterState.STATE_IDLE);
-					} else {
-						transform.position += direction * moveSpeed * Time.fixedDeltaTime;
-						transform.rotation = Quaternion.LookRotation (direction);	
+			if(EventSystem.current.currentInputModule is TouchInputModule) {
+				for(int i=0; i<Input.touchCount; i++) {
+					Touch touch = Input.touches[i];
+					if( touch.phase != TouchPhase.Canceled && touch.phase != TouchPhase.Ended) {
+						if(EventSystem.current.IsPointerOverGameObject( Input.touches[i].fingerId )) {
+							isPointerOverGameObject = true;
+							break;
+						}
 					}
 				}
 			} else {
-				if (Vector3.Distance (transform.position, destinationPos) < 0.1) {
-					changeStateTo (CharacterState.STATE_IDLE);
-				} else {
-					changeStateTo (CharacterState.STATE_MOVING);	
-					transform.position += direction * moveSpeed * Time.fixedDeltaTime;
-					transform.rotation = Quaternion.LookRotation (direction);
-				}
+				isPointerOverGameObject = EventSystem.current.IsPointerOverGameObject();
 			}
-		} else {
+*/
 
-			targetEnemy = getNearestAttackTaget ();
-			if (targetEnemy != null) {
-				destinationPos = targetEnemy.transform.position;
-				changeStateTo (CharacterState.STATE_MOVING);
+			if (IsPointerOverUIObject()) {
+				return;
+			}
+
+			Vector3 eventPos = ScreenToWorld (new Vector2 (Input.mousePosition.x, Input.mousePosition.y));
+			eventPos.y = transform.position.y;
+
+			if (skillTargetSelectionMode) {
+				if (Vector3.Distance (transform.position, eventPos) < skillRange) {
+					OnSkill2 (eventPos);
+					gm.GetComponent<UIManager>().OnSkill2Fire();
+					ToggleSkillTargetMode(0, 0);
+					skill2start = true;
+				} else {
+					ToggleSkillTargetMode(0, 0);
+				}
+
+			} else {
+				destinationPos = eventPos;
+
+				targetEnemy = getClickedAttackTarget();
 			}
 		}
+		
+		if (destinationPos != -Vector3.one) {
+			Vector3 direction = (destinationPos - transform.position).normalized;
 
-
+			if (Vector3.Distance (transform.position, destinationPos) < 0.1) {
+				changeStateTo (CharacterState.STATE_IDLE);
+				destinationPos = -Vector3.one;
+			} else {
+				transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+				transform.rotation = Quaternion.LookRotation (direction);
+				changeStateTo (CharacterState.STATE_MOVING);	
+			}
+		} else {
+			if (targetEnemy != null) {
+				IPlayer ip = targetEnemy.GetComponent<IPlayer> ();
+				if (!ip.isDead) {
+					if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
+						changeStateTo (CharacterState.STATE_ATTACKING);
+					} else {
+						Vector3 direction = (targetEnemy.transform.position - transform.position).normalized;
+						transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+						transform.rotation = Quaternion.LookRotation (direction);	
+						changeStateTo (CharacterState.STATE_MOVING);
+					}
+				} else {
+					changeStateTo (CharacterState.STATE_IDLE);
+				}
+			} else {
+				targetEnemy = getNearestAttackTarget ();
+			}
+		}
 	
 	}
 
@@ -422,35 +490,74 @@ public class HeroController : MonoBehaviour, IPlayer {
 		}
 	}
 
-	public void OnSkill2()
+	public void OnSkill2(Vector3 targetPos)
 	{
 		if (skill2start)
 			return;
-		
-		if (targetEnemy != null) {
-			IPlayer ip = targetEnemy.GetComponent<IPlayer>();
-			if (!ip.isDead) {
-				Vector3 dir = (targetEnemy.transform.position - transform.position).normalized;
-				transform.rotation = Quaternion.LookRotation (dir);
-				skill2start = true;
-				anim.SetTrigger ("skill02");
-				StartCoroutine ("Thunder", targetEnemy.transform.position);
-			}
-		}
+
+		Vector3 dir = (targetPos - transform.position).normalized;
+		transform.rotation = Quaternion.LookRotation (dir);
+		skill2start = true;
+		anim.SetTrigger ("skill02");
+		StartCoroutine ("FireExplosion", targetPos);
+
 	}
 
-	IEnumerator Thunder(Vector3 enemyPos) {
+	public void OnSkill3()
+	{
+		if (skill3start)
+			return;
+
+		skill3start = true;
+		anim.SetTrigger ("skill03");
+		StartCoroutine ("Cyclone");
+		
+	}
+	
+	IEnumerator FireExplosion(Vector3 targetPos) {
 		yield return new WaitForSeconds(1.0f);
 
-		GameObject obj = ObjectPool.instance.GetObjectForType ("Thunder", true);
+		GameObject obj = ObjectPool.instance.GetObjectForType ("Explosion", true);
 		if (obj != null) {
-			obj.transform.position = enemyPos;
+			GameObject[] attackedList = getAttackTargetList(targetPos, 2.0f);
+
+			Debug.Log (attackedList.Length);
+			for (int i=0; i < attackedList.Length; i++) {
+
+				attackedList[i].GetComponent<IPlayer>().SetAttacker(this.gameObject);
+			}
+
+			obj.transform.position = targetPos;
 			obj.GetComponent<ParticleSystem> ().Play ();
 		}
-		
-		yield return new WaitForSeconds (1.0f);
-		ObjectPool.instance.PoolObject(obj);
+		mana -= 50.0f;
 		skill2start = false;
+
+		yield return new WaitForSeconds (3.0f);
+		ObjectPool.instance.PoolObject (obj);
+	}
+
+	IEnumerator Cyclone()
+	{
+		float origHealthRegenRate = healthRegenRate;
+		float origManaRegenRate = manaRegenRate;
+		
+		healthRegenRate *= 10;
+		manaRegenRate *= 10;
+
+		GameObject obj = ObjectPool.instance.GetObjectForType ("Cyclone", true);
+		if (obj != null) {
+			obj.transform.position = transform.position;
+			obj.GetComponent<ParticleSystem> ().Play ();
+
+		}
+		mana -= 50.0f;
+		skill3start = false;
+		
+		yield return new WaitForSeconds (10.0f);
+		healthRegenRate = origHealthRegenRate;
+		manaRegenRate = origManaRegenRate;
+		ObjectPool.instance.PoolObject (obj);
 	}
 
 	void OnNormalAttack()
@@ -460,7 +567,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 
 		float distance = Vector3.Distance (transform.position, targetEnemy.transform.position);
 		if (distance < attackRange)
-			DamageEnemy (10.0f);
+			DamageEnemy (40.0f);
 	}
 
 	void OnGUI()

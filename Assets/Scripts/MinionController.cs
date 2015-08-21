@@ -149,6 +149,9 @@ public class MinionController : MonoBehaviour, IPlayer {
 	{
 		if (other.name == "Fireball") {
 			damage (40.0f);
+		} else if (other.name == "Explosion") {
+
+			damage (30.0f);
 		}
 	}
 
