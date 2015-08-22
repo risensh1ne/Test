@@ -8,11 +8,6 @@ public class UIManager : MonoBehaviour {
 	
 	public float skillCooldown;
 
-
-	public Sprite attackSprite;
-	public Sprite moveSprite;
-
-	public GameObject autoAttackBtn;
 	public GameObject skill1_btn;
 	public GameObject skill1_cooldown_obj;
 
@@ -43,14 +38,6 @@ public class UIManager : MonoBehaviour {
 			return;
 		}
 
-
-		Vector3 skill1_btn_scale = new Vector3 ();
-		skill1_btn_scale.x = (float)0.1 / (float)(skill1_btn.GetComponent<RectTransform> ().rect.width / Screen.width);
-		skill1_btn_scale.y = skill1_btn_scale.x;
-
-		skill1_btn.GetComponent<RectTransform> ().localScale = skill1_btn_scale;
-		
-		//skill1_btn.transform = new Vector3 (1 / 10, 1 / 10, 0);
 	}
 	
 	public void OnSkill1BtnClicked()
@@ -119,13 +106,18 @@ public class UIManager : MonoBehaviour {
 			return;
 		}
 
+		if (player.GetComponent<HeroController>().targetEnemy == null)
+			skill1_btn.GetComponent<Button> ().interactable = false;
+
 		if (skill1CooldownCurrent > 0) {
 			skill1CooldownCurrent -= Time.deltaTime;
 			skill1_cooldown_obj.GetComponent<Image> ().fillAmount = (skill1Cooldown - skill1CooldownCurrent) / skill1Cooldown;
 		} else {
 			skill1CooldownCurrent = 0;
 			skill1_cooldown_obj.GetComponent<Image> ().fillAmount = 0;
-			skill1_btn.GetComponent<Button> ().interactable = true;
+
+			if (player.GetComponent<HeroController>().targetEnemy != null)
+				skill1_btn.GetComponent<Button> ().interactable = true;
 		}
 
 		if (skill2CooldownCurrent > 0) {
@@ -146,27 +138,7 @@ public class UIManager : MonoBehaviour {
 			skill3_btn.GetComponent<Button> ().interactable = true;
 		}
 
-		GameObject targetEnemy = player.GetComponent<HeroController> ().targetEnemy;
 
-		/*
-		if (targetEnemy != null) {
-			float dist = Vector3.Distance (player.transform.position, targetEnemy.transform.position);
 
-			if (dist <= player.GetComponent<HeroController> ().skill1AttackRange &&
-				skill1CooldownCurrent == 0)
-				skill1_btn.GetComponent<Button> ().interactable = true;
-			else 
-				skill1_btn.GetComponent<Button> ().interactable = false;
-
-			if (dist <= player.GetComponent<HeroController> ().skill2AttackRange &&
-				skill2CooldownCurrent == 0)
-				skill2_btn.GetComponent<Button> ().interactable = true;
-			else 
-				skill2_btn.GetComponent<Button> ().interactable = false;
-		} else {
-			skill1_btn.GetComponent<Button> ().interactable = false;
-			skill2_btn.GetComponent<Button> ().interactable = false;
-		}
-		*/
 	}
 }

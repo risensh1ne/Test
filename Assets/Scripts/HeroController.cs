@@ -6,9 +6,10 @@ using System.Collections.Generic;
 
 public class HeroController : MonoBehaviour, IPlayer {
 
-	public enum CharacterState {STATE_IDLE, STATE_MOVING, STATE_ATTACKING};
+	public enum CharacterState {STATE_IDLE, STATE_MOVING, STATE_ATTACKING, STATE_SKILL};
 	public CharacterState curr_state;
-	public float moveSpeed = 5.0f;
+	[System.NonSerialized]
+	public float moveSpeed = 3.0f;
 	public float health;
 	public float mana;
 	public float healthRegenRate, manaRegenRate;
@@ -121,12 +122,16 @@ public class HeroController : MonoBehaviour, IPlayer {
 				isAttacking = true;
 			} else if (curr_state == CharacterState.STATE_IDLE) {
 				isAttacking = true;
+			} else if (curr_state == CharacterState.STATE_SKILL) {
+				isAttacking = true;
 			} 
 		} else if (newState == CharacterState.STATE_MOVING) {
 			if (curr_state == CharacterState.STATE_ATTACKING) {
 				isMoving = true;
 				isAttacking = false;
 			} else if (curr_state == CharacterState.STATE_IDLE) {
+				isMoving = true;
+			} else if (curr_state == CharacterState.STATE_SKILL) {
 				isMoving = true;
 			} 
 		} else if (newState == CharacterState.STATE_IDLE) {
@@ -136,7 +141,15 @@ public class HeroController : MonoBehaviour, IPlayer {
 				isMoving = false;
 			} 
 			destinationPos = -Vector3.one;
-		} 
+		} else if (newState == CharacterState.STATE_SKILL) {
+			if (curr_state == CharacterState.STATE_ATTACKING) {
+				isAttacking = false;
+			} else if (curr_state == CharacterState.STATE_MOVING) {
+				isMoving = false;
+			}
+			destinationPos = -Vector3.one;
+		}
+
 		curr_state = newState; 
 	}
 
@@ -198,6 +211,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 	public void GainExp(float exp_val)
 	{
 		targetEnemy = null;
+		changeStateTo (CharacterState.STATE_IDLE);
 
 		curr_exp_val += exp_val;
 		if (curr_exp_val >= max_exp_val)
@@ -353,8 +367,6 @@ public class HeroController : MonoBehaviour, IPlayer {
 	}
 
 	private bool IsPointerOverUIObject() {
-		// Referencing this code for GraphicRaycaster https://gist.github.com/stramit/ead7ca1f432f3c0f181f
-		// the ray cast appears to require only eventData.position.
 		PointerEventData eventDataCurrentPosition = new PointerEventData(EventSystem.current);
 		eventDataCurrentPosition.position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
 		
@@ -372,27 +384,10 @@ public class HeroController : MonoBehaviour, IPlayer {
 		if (isDead)
 			return;
 
-		if (skill2start || skill3start)
+		if (skill1start || skill2start || skill3start)
 			return;
 
 		if (Input.GetMouseButtonDown(0)) {
-		/*
-			bool isPointerOverGameObject = false;
-
-			if(EventSystem.current.currentInputModule is TouchInputModule) {
-				for(int i=0; i<Input.touchCount; i++) {
-					Touch touch = Input.touches[i];
-					if( touch.phase != TouchPhase.Canceled && touch.phase != TouchPhase.Ended) {
-						if(EventSystem.current.IsPointerOverGameObject( Input.touches[i].fingerId )) {
-							isPointerOverGameObject = true;
-							break;
-						}
-					}
-				}
-			} else {
-				isPointerOverGameObject = EventSystem.current.IsPointerOverGameObject();
-			}
-*/
 
 			if (IsPointerOverUIObject()) {
 				return;
@@ -442,6 +437,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 						changeStateTo (CharacterState.STATE_MOVING);
 					}
 				} else {
+					Debug.Log ("!!!");
 					changeStateTo (CharacterState.STATE_IDLE);
 				}
 			} else {
@@ -455,7 +451,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 	{
 		if (targetEnemy != null) {
 			IPlayer ip = targetEnemy.gameObject.GetComponent<IPlayer> ();
-			
+			/*
 			if (ip.isDead) {
 				targetEnemy = null;
 				isAttacking = false;
@@ -463,6 +459,11 @@ public class HeroController : MonoBehaviour, IPlayer {
 				anim.SetBool ("isAttacking", false);
 				anim.SetBool ("isMoving", false);
 			} else {
+				ip.SetAttacker(this.gameObject);
+				ip.damage (damage);
+			}
+*/
+			if (!ip.isDead) {
 				ip.SetAttacker(this.gameObject);
 				ip.damage (damage);
 			}
@@ -481,8 +482,8 @@ public class HeroController : MonoBehaviour, IPlayer {
 			return;
 		
 		if (targetEnemy != null) {
-			//Vector3 dir = (destinationPos - transform.position).normalized;
-			//transform.rotation = Quaternion.LookRotation (dir);
+			Vector3 dir = (targetEnemy.transform.position - transform.position).normalized;
+			transform.rotation = Quaternion.LookRotation (dir);
 
 			skill1start = true;
 			anim.SetBool ("skill01", true);
@@ -508,6 +509,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 		if (skill3start)
 			return;
 
+		changeStateTo (CharacterState.STATE_SKILL);
 		skill3start = true;
 		anim.SetTrigger ("skill03");
 		StartCoroutine ("Cyclone");
@@ -553,11 +555,13 @@ public class HeroController : MonoBehaviour, IPlayer {
 		}
 		mana -= 50.0f;
 		skill3start = false;
-		
-		yield return new WaitForSeconds (10.0f);
+		changeStateTo (CharacterState.STATE_IDLE);
+
+		yield return new WaitForSeconds (5.0f);
 		healthRegenRate = origHealthRegenRate;
 		manaRegenRate = origManaRegenRate;
 		ObjectPool.instance.PoolObject (obj);
+
 	}
 
 	void OnNormalAttack()
