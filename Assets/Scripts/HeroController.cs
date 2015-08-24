@@ -487,7 +487,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 
 			skill1start = true;
 			anim.SetBool ("skill01", true);
-			mana -= 20.0f;
+			useMana(20.0f);
 		}
 	}
 
@@ -532,7 +532,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 			obj.transform.position = targetPos;
 			obj.GetComponent<ParticleSystem> ().Play ();
 		}
-		mana -= 50.0f;
+		useMana (50.0f);
 		skill2start = false;
 
 		yield return new WaitForSeconds (3.0f);

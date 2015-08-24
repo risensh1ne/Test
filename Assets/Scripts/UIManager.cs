@@ -126,7 +126,11 @@ public class UIManager : MonoBehaviour {
 		} else {
 			skill2CooldownCurrent = 0;
 			skill2_cooldown_obj.GetComponent<Image> ().fillAmount = 0;
-			skill2_btn.GetComponent<Button> ().interactable = true;
+
+			if (player.GetComponent<HeroController>().mana >= 20.0f)
+				skill2_btn.GetComponent<Button> ().interactable = true;
+			else
+				skill2_btn.GetComponent<Button> ().interactable = false;
 		}
 
 		if (skill3CooldownCurrent > 0) {
@@ -135,7 +139,10 @@ public class UIManager : MonoBehaviour {
 		} else {
 			skill3CooldownCurrent = 0;
 			skill3_cooldown_obj.GetComponent<Image> ().fillAmount = 0;
-			skill3_btn.GetComponent<Button> ().interactable = true;
+			if (player.GetComponent<HeroController>().mana >= 50.0f)
+				skill3_btn.GetComponent<Button> ().interactable = true;
+			else
+				skill3_btn.GetComponent<Button> ().interactable = false;
 		}
 
 

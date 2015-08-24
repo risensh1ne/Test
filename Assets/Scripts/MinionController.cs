@@ -4,6 +4,7 @@ using System.Collections;
 public class MinionController : MonoBehaviour, IPlayer {
 
 	public float health = 50.0f;
+	[System.NonSerialized]
 	public float lookRange = 4.0f;
 	public float attackRange = 1.0f;
 
