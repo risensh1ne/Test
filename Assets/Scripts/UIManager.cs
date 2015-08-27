@@ -42,7 +42,7 @@ public class UIManager : MonoBehaviour {
 	
 	public void OnSkill1BtnClicked()
 	{
-		player.GetComponent<HeroController> ().OnSkill1 ();
+		player.GetComponent<PhotonView> ().RPC ("OnSkill1", PhotonTargets.All);
 		skill1CooldownCurrent = skill1Cooldown;
 		skill1_btn.GetComponent<Button> ().interactable = false;
 	}
@@ -55,7 +55,7 @@ public class UIManager : MonoBehaviour {
 
 	public void OnSkill3BtnClicked()
 	{
-		player.GetComponent<HeroController> ().OnSkill3 ();
+		player.GetComponent<PhotonView> ().RPC ("OnSkill3", PhotonTargets.All);
 		skill3CooldownCurrent = skill3Cooldown;
 		skill3_btn.GetComponent<Button> ().interactable = false;
 	}
@@ -68,6 +68,9 @@ public class UIManager : MonoBehaviour {
 
 	void OnGUI()
 	{
+		if (player == null) 
+			return;
+
 		Texture t1 = heroIcons [0].texture;
 
 		GUI.DrawTexture (new Rect (20, 50, 50, 50), t1);

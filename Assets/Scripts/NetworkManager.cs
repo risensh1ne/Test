@@ -4,8 +4,15 @@ using System.Collections;
 public class NetworkManager : MonoBehaviour {
 
 	bool connecting;
-	// Use this for initialization
+
+	public GameManager gm;
+	public string selectedHeroName;
+	public GameManager.team selectedTeam;
+
 	void Start () {
+
+		gm = gameObject.GetComponent<GameManager> ();
+
 		PhotonNetwork.player.name = PlayerPrefs.GetString ("username", "risenshine");
 		connecting = false;
 	}
@@ -14,8 +21,11 @@ public class NetworkManager : MonoBehaviour {
 		PlayerPrefs.SetString("username", PhotonNetwork.player.name);
 	}
 
-	void Connect() {
+	void Connect(string heroName, GameManager.team team) {
 		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
+
+		selectedHeroName = heroName;
+		selectedTeam = team;
 	}
 
 	void OnJoinedLobby() {
@@ -31,6 +41,10 @@ public class NetworkManager : MonoBehaviour {
 	void OnJoinedRoom() {
 		Debug.Log ("OnJoinedRoom");
 		connecting = false;
+
+		GameObject obj = SpawnHero (selectedHeroName, selectedTeam);
+		//gm.player = obj;
+		gm.setPlayer (selectedHeroName);
 	}
 
 	void OnGUI()
@@ -50,15 +64,15 @@ public class NetworkManager : MonoBehaviour {
 			PhotonNetwork.player.name = GUILayout.TextField(PhotonNetwork.player.name);
 			GUILayout.EndHorizontal();
 			
-			if( GUILayout.Button("Single Player") ) {
+			if( GUILayout.Button("Gion") ) {
 				connecting = true;
-				PhotonNetwork.offlineMode = true;
-				OnJoinedLobby();
+				//PhotonNetwork.offlineMode = true;
+				Connect ("Gion", GameManager.team.BETA);
 			}
 			
-			if( GUILayout.Button("Multi Player") ) {
+			if( GUILayout.Button("Sword Master") ) {
 				connecting = true;
-				Connect ();
+				Connect ("SwordMaster", GameManager.team.ALPHA);
 			}
 			
 			GUILayout.FlexibleSpace();
@@ -68,11 +82,41 @@ public class NetworkManager : MonoBehaviour {
 			GUILayout.EndArea();
 		}
 	}
+	
+	GameObject SpawnHero(string heroName, GameManager.team team)
+	{
+		Vector3 startPos, destPos;
+
+		if (team == GameManager.team.BETA) {
+			startPos = gm.betaHome.transform.position;
+			destPos = gm.alphaHome.transform.position;
+		} else {
+			startPos = gm.alphaHome.transform.position;
+			destPos = gm.betaHome.transform.position;
+		}
+
+		Vector3 direction = (destPos - startPos).normalized;
+
+		GameObject heroObj = PhotonNetwork.Instantiate (heroName, 
+		                                                startPos, Quaternion.LookRotation (direction), 0);
+		heroObj.GetComponent<HeroController> ().attachedTeam = team;
+		heroObj.GetComponent<HeroController> ().startPos = startPos;
+		heroObj.GetComponent<HeroController> ().endPos = destPos;
+		gm.addHeroObj (heroObj);
+
+		//heroObj.GetComponent<PhotonView> ().RPC ("SetTeam", PhotonTargets.AllBuffered, team);
+
+		return heroObj;
+
+	}
+
+
+
 
 	// Update is called once per frame
 	void Update () {
 		if (PhotonNetwork.connected) {
-			Debug.Log ("connected!!!");
+
 		}
 	}
 }

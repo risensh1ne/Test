@@ -4,7 +4,7 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
-public class HeroController : MonoBehaviour, IPlayer {
+public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 	public enum CharacterState {STATE_IDLE, STATE_MOVING, STATE_ATTACKING, STATE_SKILL};
 	public CharacterState curr_state;
@@ -27,8 +27,12 @@ public class HeroController : MonoBehaviour, IPlayer {
 	public Texture2D progressBarBack;
 	public Texture2D progressBarHealth;
 
+	public Vector3 startPos, endPos;
 	public Vector3 destinationPos;
 	public GameObject targetEnemy;
+
+	public Vector3 realPosition;
+	public Quaternion realRotation = Quaternion.identity;
 
 	public GameObject gm;
 
@@ -39,6 +43,61 @@ public class HeroController : MonoBehaviour, IPlayer {
 	public float skillRange;
 
 	private GameObject lastAttackedBy;
+
+	private bool gotFirstUpdate;
+
+	[PunRPC]
+	void SetTeam(GameManager.team team)
+	{
+		attachedTeam = team;	
+	}
+
+	[PunRPC]
+	void DamageSync(float d)
+	{
+		damage (d);
+	}
+
+	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) 
+	{
+		if (stream.isWriting) {
+			stream.SendNext (gameObject.transform.position);
+			stream.SendNext (gameObject.transform.rotation);
+			stream.SendNext (health);
+
+			stream.SendNext (isMoving);
+			stream.SendNext (isAttacking);
+			stream.SendNext (isDead);
+
+			stream.SendNext (anim.GetBool ("skill01"));
+			stream.SendNext (anim.GetBool ("skill02"));
+			stream.SendNext (anim.GetBool ("skill03"));
+
+		} else {
+			realPosition = (Vector3)stream.ReceiveNext();
+			realRotation = (Quaternion)stream.ReceiveNext();
+			health = (float)stream.ReceiveNext();
+
+			isMoving = (bool)stream.ReceiveNext();
+			isAttacking = (bool)stream.ReceiveNext();
+			isDead = (bool)stream.ReceiveNext();
+
+			anim.SetBool ("skill01", (bool)stream.ReceiveNext());
+			anim.SetBool ("skill02", (bool)stream.ReceiveNext());
+			anim.SetBool ("skill03", (bool)stream.ReceiveNext());
+
+			if(gotFirstUpdate == false) {
+				transform.position = realPosition;
+				transform.rotation = realRotation;
+				gotFirstUpdate = true;
+			}
+
+			if (health == 0) {
+				StartCoroutine("Die");
+			}
+		}
+		
+	}
 
 	public void ToggleSkillTargetMode(int skill, float range)
 	{
@@ -84,8 +143,6 @@ public class HeroController : MonoBehaviour, IPlayer {
 	bool bMoving;
 	bool bAttacking;
 	bool bDead;
-
-	public bool isMine;
 
 	public bool isMoving 
 	{
@@ -248,10 +305,9 @@ public class HeroController : MonoBehaviour, IPlayer {
 		gm.GetComponent<PlayerController> ().updateManaBar ();
 		gm.GetComponent<PlayerController> ().updateLevelText ();
 
-		if (attachedTeam == GameManager.team.ALPHA)
-			transform.position = gm.GetComponent<GameManager> ().alphaHome.position;
-		else 
-			transform.position = gm.GetComponent<GameManager> ().betaHome.position;
+		transform.position = startPos;
+		if (!photonView.isMine)
+			destinationPos = endPos;
 	}
 
 	void updateMaxStats()
@@ -278,7 +334,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 		updateMaxStats ();
 		ResetStats ();
 
-		if (isMine) {
+		if (photonView.isMine) {
 			gm.GetComponent<PlayerController> ().updateHealthBar ();
 			gm.GetComponent<PlayerController> ().updateManaBar ();
 			gm.GetComponent<PlayerController> ().updateLevelText ();
@@ -380,69 +436,74 @@ public class HeroController : MonoBehaviour, IPlayer {
 	{
 		if (anim == null)
 			return;
-
-		if (isDead)
-			return;
-
-		if (skill1start || skill2start || skill3start)
-			return;
-
-		if (Input.GetMouseButtonDown(0)) {
-
-			if (IsPointerOverUIObject()) {
+				
+		if (photonView.isMine) {
+			if (isDead)
 				return;
-			}
 
-			Vector3 eventPos = ScreenToWorld (new Vector2 (Input.mousePosition.x, Input.mousePosition.y));
-			eventPos.y = transform.position.y;
+			if (skill1start || skill2start || skill3start)
+				return;
 
-			if (skillTargetSelectionMode) {
-				if (Vector3.Distance (transform.position, eventPos) < skillRange) {
-					OnSkill2 (eventPos);
-					gm.GetComponent<UIManager>().OnSkill2Fire();
-					ToggleSkillTargetMode(0, 0);
-					skill2start = true;
-				} else {
-					ToggleSkillTargetMode(0, 0);
+			if (Input.GetMouseButtonDown (0)) {
+
+				if (IsPointerOverUIObject ()) {
+					return;
 				}
 
-			} else {
-				destinationPos = eventPos;
+				Vector3 eventPos = ScreenToWorld (new Vector2 (Input.mousePosition.x, Input.mousePosition.y));
+				eventPos.y = transform.position.y;
 
-				targetEnemy = getClickedAttackTarget();
-			}
-		}
-		
-		if (destinationPos != -Vector3.one) {
-			Vector3 direction = (destinationPos - transform.position).normalized;
-
-			if (Vector3.Distance (transform.position, destinationPos) < 0.1) {
-				changeStateTo (CharacterState.STATE_IDLE);
-				destinationPos = -Vector3.one;
-			} else {
-				transform.position += direction * moveSpeed * Time.fixedDeltaTime;
-				transform.rotation = Quaternion.LookRotation (direction);
-				changeStateTo (CharacterState.STATE_MOVING);	
-			}
-		} else {
-			if (targetEnemy != null) {
-				IPlayer ip = targetEnemy.GetComponent<IPlayer> ();
-				if (!ip.isDead) {
-					if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
-						changeStateTo (CharacterState.STATE_ATTACKING);
+				if (skillTargetSelectionMode) {
+					if (Vector3.Distance (transform.position, eventPos) < skillRange) {
+						gameObject.GetComponent<PhotonView> ().RPC ("OnSkill2", PhotonTargets.All, eventPos);
+						//OnSkill2 (eventPos);
+						gm.GetComponent<UIManager> ().OnSkill2Fire ();
+						ToggleSkillTargetMode (0, 0);
+						skill2start = true;
 					} else {
-						Vector3 direction = (targetEnemy.transform.position - transform.position).normalized;
-						transform.position += direction * moveSpeed * Time.fixedDeltaTime;
-						transform.rotation = Quaternion.LookRotation (direction);	
-						changeStateTo (CharacterState.STATE_MOVING);
+						ToggleSkillTargetMode (0, 0);
+					}
+
+				} else {
+					destinationPos = eventPos;
+
+					targetEnemy = getClickedAttackTarget ();
+				}
+			}
+		
+			if (destinationPos != -Vector3.one) {
+				Vector3 direction = (destinationPos - transform.position).normalized;
+
+				if (Vector3.Distance (transform.position, destinationPos) < 0.1) {
+					changeStateTo (CharacterState.STATE_IDLE);
+					destinationPos = -Vector3.one;
+				} else {
+					transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+					transform.rotation = Quaternion.LookRotation (direction);
+					changeStateTo (CharacterState.STATE_MOVING);	
+				}
+			} else {
+				if (targetEnemy != null) {
+					IPlayer ip = targetEnemy.GetComponent<IPlayer> ();
+					if (!ip.isDead) {
+						if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
+							changeStateTo (CharacterState.STATE_ATTACKING);
+						} else {
+							Vector3 direction = (targetEnemy.transform.position - transform.position).normalized;
+							transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+							transform.rotation = Quaternion.LookRotation (direction);	
+							changeStateTo (CharacterState.STATE_MOVING);
+						}
+					} else {
+						changeStateTo (CharacterState.STATE_IDLE);
 					}
 				} else {
-					Debug.Log ("!!!");
-					changeStateTo (CharacterState.STATE_IDLE);
+					targetEnemy = getNearestAttackTarget ();
 				}
-			} else {
-				targetEnemy = getNearestAttackTarget ();
 			}
+		} else {
+			transform.position = realPosition; //Vector3.Lerp(transform.position, realPosition, 0.1f);
+			transform.rotation = realRotation; //Quaternion.Lerp(transform.rotation, realRotation, 0.1f);
 		}
 	
 	}
@@ -465,22 +526,24 @@ public class HeroController : MonoBehaviour, IPlayer {
 */
 			if (!ip.isDead) {
 				ip.SetAttacker(this.gameObject);
-				ip.damage (damage);
+				//ip.damage (damage);
+				targetEnemy.GetComponent<PhotonView> ().RPC ("DamageSync", PhotonTargets.Others, damage);
 			}
 		}
 	}
 
-	void OnSkill1Start()
+	void Skill1Damage()
 	{
 		DamageEnemy (40.0f);
 		skill1start = false;
 	}
-	
+
+	[PunRPC]
 	public void OnSkill1()
 	{
 		if (skill1start)
 			return;
-		
+
 		if (targetEnemy != null) {
 			Vector3 dir = (targetEnemy.transform.position - transform.position).normalized;
 			transform.rotation = Quaternion.LookRotation (dir);
@@ -491,6 +554,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 		}
 	}
 
+	[PunRPC]
 	public void OnSkill2(Vector3 targetPos)
 	{
 		if (skill2start)
@@ -504,6 +568,7 @@ public class HeroController : MonoBehaviour, IPlayer {
 
 	}
 
+	[PunRPC]
 	public void OnSkill3()
 	{
 		if (skill3start)
@@ -586,12 +651,14 @@ public class HeroController : MonoBehaviour, IPlayer {
 		GUI.EndGroup();
 		GUI.EndGroup ();	
 
+		/*
 		if (isMine && targetEnemy != null) {
 			Vector3 enemyPos = targetEnemy.transform.position;
 			enemyPos.y += 1;
 			Vector3 pos2 = Camera.main.WorldToScreenPoint (enemyPos);
 			GUI.Label (new Rect (pos2.x, pos2.y, 50, 50), targetEnemy.name);
-		}           
+		} 
+		*/
 	}
 
 	Vector3 ScreenToWorld( Vector2 screenPos )

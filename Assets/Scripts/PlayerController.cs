@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
 
-	
 	public bool attackSelection = false;
 	
 	public RectTransform healthBarTransform;

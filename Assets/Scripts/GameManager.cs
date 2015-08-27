@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
 
@@ -7,7 +8,7 @@ public class GameManager : MonoBehaviour {
 	float nextSpawnRemaining;
 
 	public GameObject[] heroPrefabs;
-	public GameObject[] heros;
+	public List<GameObject> heros;
 
 	public enum team { ALPHA, BETA };
 
@@ -19,35 +20,41 @@ public class GameManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		heros = new GameObject[1];
-
-		GameObject heroObj = Instantiate (heroPrefabs [0]) as GameObject;
-		heroObj.GetComponent<HeroController>().isMine = true;
-		heroObj.GetComponent<HeroController> ().attachedTeam = team.BETA;
-		heroObj.transform.position = betaHome.transform.position;
-		heroObj.GetComponent<HeroController> ().destinationPos = - Vector3.one;
-		heroObj.name = "Gion";
-		player = heroObj;
-		heros [0] = heroObj;
-
-		/*
-		heroObj = Instantiate (heroPrefabs [1]) as GameObject;
-		heroObj.GetComponent<HeroController>().isMine = false;
-		heroObj.GetComponent<HeroController> ().attachedTeam = team.ALPHA;
-		heroObj.transform.position = alphaHome.transform.position;
-		heroObj.GetComponent<HeroController>().destinationPos = betaHome.transform.position;
-		heroObj.name = "SwordMaster";
-		heros [1] = heroObj;
-		*/
+		heros = new List<GameObject>();
 
 		nextSpawnRemaining = spawnPeriod;
-		StartCoroutine ("SpawnMinion");
+		//StartCoroutine ("SpawnMinion");
 
+	}
+
+	public void setPlayer(string heroName)
+	{
+		for (int i=0; i < heros.Count; i++) {
+			if (heros [i].name == heroName + "(Clone)") {
+				player = heros[i].gameObject;
+				heros [i].GetComponent<HeroController> ().destinationPos = - Vector3.one;
+				break;
+			}
+		}
+	}
+
+	public void addHeroObj(GameObject obj)
+	{
+		heros.Add(obj);
+	}
+
+	public GameObject getHeroPrefab(string heroName)
+	{
+		for (int i=0; i < heroPrefabs.Length; i++) {
+			if (heroPrefabs [i].name == heroName)
+				return heroPrefabs [i];
+		}
+		return null;
 	}
 
 	public GameObject getHeroObj(string heroName)
 	{
-		for (int i=0; i < heros.Length; i++) {
+		for (int i=0; i < heros.Count; i++) {
 			if (heros [i].name == heroName)
 				return heros [i];
 		}
@@ -62,12 +69,12 @@ public class GameManager : MonoBehaviour {
 		if (minionAlpha != null) {
 			minionAlpha.GetComponent<MinionController> ().OnSpawn ();
 		}
-/*
+
 		GameObject minionBeta = ObjectPool.instance.GetObjectForType ("minion_beta", true);
 		if (minionBeta != null) {
 			minionBeta.GetComponent<MinionController>().OnSpawn();
 		}
-*/
+
 	}
 	
 	// Update is called once per frame
@@ -77,7 +84,7 @@ public class GameManager : MonoBehaviour {
 
 		if (nextSpawnRemaining <= 0) {
 			nextSpawnRemaining = spawnPeriod;
-			StartCoroutine ("SpawnMinion");
+			//StartCoroutine ("SpawnMinion");
 		}
 
 	}
