@@ -46,6 +46,10 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 	private bool gotFirstUpdate;
 
+
+
+	Animator anim;
+
 	[PunRPC]
 	void SetTeam(GameManager.team team)
 	{
@@ -213,9 +217,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	public GameManager.team checkTeam() {
 		return attachedTeam;
 	}
-
-	Animator anim;
-
+	
 	public void damage(float d)
 	{
 		if (isDead)
@@ -262,6 +264,8 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	{
 		if (other.name == "Fireball") {
 			damage (40.0f);
+		} else if (other.name == "Explosion") {
+			damage (30.0f);
 		}
 	}
 
@@ -344,6 +348,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	// Use this for initialization
 	void Start () {
 		anim = GetComponent<Animator> ();
+
 		gm = GameObject.Find ("_GM");
 
 		firePoint = transform.Find ("FirePoint");
@@ -456,7 +461,6 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 				if (skillTargetSelectionMode) {
 					if (Vector3.Distance (transform.position, eventPos) < skillRange) {
 						gameObject.GetComponent<PhotonView> ().RPC ("OnSkill2", PhotonTargets.All, eventPos);
-						//OnSkill2 (eventPos);
 						gm.GetComponent<UIManager> ().OnSkill2Fire ();
 						ToggleSkillTargetMode (0, 0);
 						skill2start = true;
@@ -512,18 +516,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	{
 		if (targetEnemy != null) {
 			IPlayer ip = targetEnemy.gameObject.GetComponent<IPlayer> ();
-			/*
-			if (ip.isDead) {
-				targetEnemy = null;
-				isAttacking = false;
-				isMoving = false;
-				anim.SetBool ("isAttacking", false);
-				anim.SetBool ("isMoving", false);
-			} else {
-				ip.SetAttacker(this.gameObject);
-				ip.damage (damage);
-			}
-*/
+
 			if (!ip.isDead) {
 				ip.SetAttacker(this.gameObject);
 				//ip.damage (damage);
@@ -545,12 +538,22 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 			return;
 
 		if (targetEnemy != null) {
-			Vector3 dir = (targetEnemy.transform.position - transform.position).normalized;
-			transform.rotation = Quaternion.LookRotation (dir);
 
-			skill1start = true;
-			anim.SetBool ("skill01", true);
-			useMana(20.0f);
+			if (name == "Gion(Clone)") {
+				Vector3 dir = (targetEnemy.transform.position - transform.position).normalized;
+				transform.rotation = Quaternion.LookRotation (dir);
+
+				skill1start = true;
+				anim.SetBool ("skill01", true);
+				useMana(20.0f);
+			} else if (name == "SwordMaster(Clone)") {
+				Vector3 dir = (targetEnemy.transform.position - transform.position).normalized;
+				transform.rotation = Quaternion.LookRotation (dir);
+				
+				skill1start = true;
+				anim.SetBool ("skill01", true);
+				useMana(20.0f);
+			}
 		}
 	}
 
@@ -560,12 +563,43 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		if (skill2start)
 			return;
 
-		Vector3 dir = (targetPos - transform.position).normalized;
-		transform.rotation = Quaternion.LookRotation (dir);
-		skill2start = true;
-		anim.SetTrigger ("skill02");
-		StartCoroutine ("FireExplosion", targetPos);
+		changeStateTo (CharacterState.STATE_SKILL);
 
+		if (name == "Gion(Clone)") {
+			Vector3 dir = (targetPos - transform.position).normalized;
+			transform.rotation = Quaternion.LookRotation (dir);
+			skill2start = true;
+			anim.SetTrigger ("skill02");
+			StartCoroutine ("FireExplosion", targetPos);
+		} else if (name == "SwordMaster(Clone)") {
+			Vector3 dir = (targetPos - transform.position).normalized;
+			transform.rotation = Quaternion.LookRotation (dir);
+			skill2start = true;
+			anim.SetTrigger ("skill02");
+			StartCoroutine ("OnSkill2End", targetPos);
+		} 
+	}
+
+	IEnumerator OnSkill2End(Vector3 targetPos)
+	{
+		yield return new WaitForSeconds(1.4f);
+
+		GameObject obj = ObjectPool.instance.GetObjectForType ("energyBlast", true);
+		if (obj != null) {
+			GameObject[] attackedList = getAttackTargetList(targetPos, 2.0f);
+			
+			for (int i=0; i < attackedList.Length; i++) {
+				attackedList[i].GetComponent<IPlayer>().SetAttacker(this.gameObject);
+			}
+
+			obj.transform.position = targetPos;
+			obj.GetComponent<ParticleSystem> ().Play ();
+		}
+		useMana (10.0f);
+		skill2start = false;
+
+		yield return new WaitForSeconds (2.0f);
+		ObjectPool.instance.PoolObject (obj);
 	}
 
 	[PunRPC]
@@ -588,7 +622,6 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		if (obj != null) {
 			GameObject[] attackedList = getAttackTargetList(targetPos, 2.0f);
 
-			Debug.Log (attackedList.Length);
 			for (int i=0; i < attackedList.Length; i++) {
 
 				attackedList[i].GetComponent<IPlayer>().SetAttacker(this.gameObject);

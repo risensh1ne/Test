@@ -28,14 +28,31 @@ public class UIManager : MonoBehaviour {
 
 	public Sprite[] heroIcons;
 
+	public Sprite[] skillIcons;
+
 	public Texture2D progressBarBack, progressBarHealth;
 
 	// Use this for initialization
 	void Start () {
+
+	}
+
+	public void initializeUI()
+	{
 		player = gameObject.GetComponent<GameManager> ().player;
 		if (player == null) {
 			Debug.Log ("Can't find Player object");
 			return;
+		}
+
+		if (player.name == "Gion(Clone)") { 
+			skill1_btn.GetComponent<Image> ().sprite = skillIcons [0];
+			skill2_btn.GetComponent<Image> ().sprite = skillIcons [1];
+			skill3_btn.GetComponent<Image> ().sprite = skillIcons [2];
+		} else if (player.name == "SwordMaster(Clone)") { 
+			skill1_btn.GetComponent<Image> ().sprite = skillIcons [2];
+			skill2_btn.GetComponent<Image> ().sprite = skillIcons [1];
+			skill3_btn.GetComponent<Image> ().sprite = skillIcons [0];
 		}
 
 	}
@@ -50,7 +67,6 @@ public class UIManager : MonoBehaviour {
 	public void OnSkill2BtnClicked()
 	{
 		player.GetComponent<HeroController> ().ToggleSkillTargetMode(2, 10.0f);
-		//player.GetComponent<HeroController> ().OnSkill2 ();
 	}
 
 	public void OnSkill3BtnClicked()

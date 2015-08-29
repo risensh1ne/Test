@@ -45,6 +45,8 @@ public class NetworkManager : MonoBehaviour {
 		GameObject obj = SpawnHero (selectedHeroName, selectedTeam);
 		//gm.player = obj;
 		gm.setPlayer (selectedHeroName);
+
+		gameObject.GetComponent<UIManager> ().initializeUI ();
 	}
 
 	void OnGUI()
@@ -104,7 +106,6 @@ public class NetworkManager : MonoBehaviour {
 		heroObj.GetComponent<HeroController> ().endPos = destPos;
 		gm.addHeroObj (heroObj);
 
-		//heroObj.GetComponent<PhotonView> ().RPC ("SetTeam", PhotonTargets.AllBuffered, team);
 
 		return heroObj;
 
