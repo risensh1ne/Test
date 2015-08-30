@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class MinionController : MonoBehaviour, IPlayer {
+public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 	public float health = 50.0f;
 	[System.NonSerialized]
@@ -13,6 +13,10 @@ public class MinionController : MonoBehaviour, IPlayer {
 	public float walkSpeed;
 	
 	public GameManager.team attachedTeam;
+
+	public Vector3 realPosition;
+	public Quaternion realRotation = Quaternion.identity;
+	private bool gotFirstUpdate;
 
 	private float my_exp_val = 100.0f;
 
@@ -64,8 +68,40 @@ public class MinionController : MonoBehaviour, IPlayer {
 	public void setTeam(GameManager.team team) {
 		alphaHome = GameObject.Find ("targetPosition_alpha");	
 		betaHome = GameObject.Find ("targetPosition_beta");
-
+		Debug.Log ("!!!");
 		attachedTeam = team;
+	}
+
+	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) 
+	{
+		if (stream.isWriting) {
+			stream.SendNext (gameObject.transform.position);
+			stream.SendNext (gameObject.transform.rotation);
+			stream.SendNext (health);
+			
+			stream.SendNext (isMoving);
+			stream.SendNext (isAttacking);
+			stream.SendNext (isDead);
+		} else {
+			realPosition = (Vector3)stream.ReceiveNext();
+			realRotation = (Quaternion)stream.ReceiveNext();
+			health = (float)stream.ReceiveNext();
+			
+			isMoving = (bool)stream.ReceiveNext();
+			isAttacking = (bool)stream.ReceiveNext();
+			isDead = (bool)stream.ReceiveNext();
+
+			if(gotFirstUpdate == false) {
+				transform.position = realPosition;
+				transform.rotation = realRotation;
+				gotFirstUpdate = true;
+			}
+			
+			if (health == 0) {
+				StartCoroutine("Die");
+			}
+		}
+		
 	}
 
 	public void InitState() {
@@ -110,11 +146,16 @@ public class MinionController : MonoBehaviour, IPlayer {
 					
 					anim.SetBool ("isAttacking", false);
 				} else {
-					ip.damage (10.0f);
+					targetEnemy.GetComponent<PhotonView> ().RPC ("DamageSync", PhotonTargets.Others, 10.0f);
 				}
 			}
 		}
+	}
 
+	[PunRPC]
+	void DamageSync(float d)
+	{
+		damage (d);
 	}
 
 	public void damage(float d)
@@ -166,80 +207,86 @@ public class MinionController : MonoBehaviour, IPlayer {
 	}
 
 	void FixedUpdate() {
-		if (startPos == null || endPos == null)
-			return;
 
-		if (isDead)
-			return;
+		if (photonView.isMine) {
+			if (startPos == null || endPos == null)
+				return;
 
-		int enemyIndex = -1;
-		float enemyDistance = 0;
-		Vector3 direction;
-		Collider[] cldrs = Physics.OverlapSphere (transform.position, lookRange);
-		if (cldrs.Length > 0) {
+			if (isDead)
+				return;
 
-			for (int i=0; i < cldrs.Length; i++) {
+			int enemyIndex = -1;
+			float enemyDistance = 0;
+			Vector3 direction;
+			Collider[] cldrs = Physics.OverlapSphere (transform.position, lookRange);
+			if (cldrs.Length > 0) {
 
-				bool isTarget = false;
-				if (cldrs [i].tag == "Player" || cldrs [i].tag == "minion" || cldrs [i].tag == "defender") {
-					IPlayer ip = cldrs [i].gameObject.GetComponent<IPlayer>();
-					if (attachedTeam != ip.checkTeam())
-						isTarget = true;
-				}
+				for (int i=0; i < cldrs.Length; i++) {
 
-				if (isTarget) {
-					float dist = Vector3.Distance (cldrs [i].transform.position, transform.position);
-					if (enemyDistance == 0 || dist < enemyDistance) {
-						enemyDistance = dist;
-						enemyIndex = i;
+					bool isTarget = false;
+					if (cldrs [i].tag == "Player" || cldrs [i].tag == "minion" || cldrs [i].tag == "defender") {
+						IPlayer ip = cldrs [i].gameObject.GetComponent<IPlayer> ();
+						if (attachedTeam != ip.checkTeam ())
+							isTarget = true;
+					}
+
+					if (isTarget) {
+						float dist = Vector3.Distance (cldrs [i].transform.position, transform.position);
+						if (enemyDistance == 0 || dist < enemyDistance) {
+							enemyDistance = dist;
+							enemyIndex = i;
+						}
 					}
 				}
 			}
-		}
-	
-		if (enemyIndex >= 0) {
-			targetEnemy = cldrs [enemyIndex].gameObject;
-			IPlayer ip = targetEnemy.GetComponent<IPlayer>();
+		
+			if (enemyIndex >= 0) {
+				targetEnemy = cldrs [enemyIndex].gameObject;
+				IPlayer ip = targetEnemy.GetComponent<IPlayer> ();
 
-			if (!ip.isDead) {
-				if (enemyDistance <= attackRange) {
-					if (!isAttacking) {
-						isAttacking = true;
-						anim.SetBool ("isAttacking", true);
+				if (!ip.isDead) {
+					if (enemyDistance <= attackRange) {
+						if (!isAttacking) {
+							isAttacking = true;
+							anim.SetBool ("isAttacking", true);
+						}
+					} else {
+						if (isAttacking) {
+							isAttacking = false;
+							anim.SetBool ("isAttacking", false);
+						} else {
+							direction = (cldrs [enemyIndex].transform.position - transform.position).normalized;
+							transform.position += direction * walkSpeed * Time.fixedDeltaTime;
+							transform.rotation = Quaternion.LookRotation (direction);
+						}
 					}
 				} else {
+					direction = (endPos - transform.position).normalized;
+					transform.position += direction * walkSpeed * Time.fixedDeltaTime;
+					transform.rotation = Quaternion.LookRotation (direction);
+					
+					targetEnemy = null;
 					if (isAttacking) {
 						isAttacking = false;
 						anim.SetBool ("isAttacking", false);
-					} else {
-						direction = (cldrs [enemyIndex].transform.position - transform.position).normalized;
-						transform.position += direction * walkSpeed * Time.fixedDeltaTime;
-						transform.rotation = Quaternion.LookRotation (direction);
 					}
 				}
 			} else {
 				direction = (endPos - transform.position).normalized;
 				transform.position += direction * walkSpeed * Time.fixedDeltaTime;
 				transform.rotation = Quaternion.LookRotation (direction);
-				
+
 				targetEnemy = null;
 				if (isAttacking) {
 					isAttacking = false;
 					anim.SetBool ("isAttacking", false);
 				}
+
+
 			}
 		} else {
-			direction = (endPos - transform.position).normalized;
-			transform.position += direction * walkSpeed * Time.fixedDeltaTime;
-			transform.rotation = Quaternion.LookRotation (direction);
-
-			targetEnemy = null;
-			if (isAttacking) {
-				isAttacking = false;
-				anim.SetBool ("isAttacking", false);
-			}
-
-
+			transform.position = realPosition; //Vector3.Lerp(transform.position, realPosition, 0.1f);
+			transform.rotation = realRotation; //Quaternion.Lerp(transform.rotation, realRotation, 0.1f);
 		}
 
 	}

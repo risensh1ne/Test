@@ -45,15 +45,16 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	private GameObject lastAttackedBy;
 
 	private bool gotFirstUpdate;
-
-
-
+	
 	Animator anim;
 
 	[PunRPC]
-	void SetTeam(GameManager.team team)
+	public void init(object[] param)
 	{
-		attachedTeam = team;	
+		attachedTeam = (GameManager.team)param[0];
+		Debug.Log (attachedTeam);
+		startPos = (Vector3)param[1];
+		endPos = (Vector3)param[2];
 	}
 
 	[PunRPC]
@@ -175,6 +176,15 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		}
 	}
 
+	public void init_hero(GameManager.team team, Vector3 startPos, Vector3 destPos)
+	{
+		Debug.Log (team);
+		object[] param = new object[3]{team, startPos, destPos};
+
+		gameObject.GetComponent<PhotonView> ().RPC ("init", PhotonTargets.AllBuffered, param);
+
+	}
+
 	public void changeStateTo(CharacterState newState)
 	{
 		if (newState == CharacterState.STATE_ATTACKING) {
@@ -266,6 +276,8 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 			damage (40.0f);
 		} else if (other.name == "Explosion") {
 			damage (30.0f);
+		} else if (other.name == "energyBlast") {
+			damage (20.0f);
 		}
 	}
 

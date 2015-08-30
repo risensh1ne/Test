@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour {
 		heros = new List<GameObject>();
 
 		nextSpawnRemaining = spawnPeriod;
-		//StartCoroutine ("SpawnMinion");
+		StartCoroutine ("SpawnMinion");
 
 	}
 
@@ -65,14 +65,18 @@ public class GameManager : MonoBehaviour {
 
 		yield return new WaitForSeconds (1.0f);
 
-		GameObject minionAlpha = ObjectPool.instance.GetObjectForType ("minion_alpha", true);
-		if (minionAlpha != null) {
-			minionAlpha.GetComponent<MinionController> ().OnSpawn ();
+		if (player.GetComponent<HeroController> ().checkTeam () == GameManager.team.ALPHA) {
+			GameObject minionAlpha = ObjectPool.instance.GetObjectForType ("minion_alpha", true);
+			if (minionAlpha != null) {
+				minionAlpha.GetComponent<MinionController> ().OnSpawn ();
+			}
 		}
 
-		GameObject minionBeta = ObjectPool.instance.GetObjectForType ("minion_beta", true);
-		if (minionBeta != null) {
-			minionBeta.GetComponent<MinionController>().OnSpawn();
+		if (player.GetComponent<HeroController> ().checkTeam () == GameManager.team.BETA) {
+			GameObject minionBeta = ObjectPool.instance.GetObjectForType ("minion_beta", true);
+			if (minionBeta != null) {
+				minionBeta.GetComponent<MinionController> ().OnSpawn ();
+			}
 		}
 
 	}
@@ -84,7 +88,7 @@ public class GameManager : MonoBehaviour {
 
 		if (nextSpawnRemaining <= 0) {
 			nextSpawnRemaining = spawnPeriod;
-			//StartCoroutine ("SpawnMinion");
+			StartCoroutine ("SpawnMinion");
 		}
 
 	}

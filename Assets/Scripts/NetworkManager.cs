@@ -43,10 +43,10 @@ public class NetworkManager : MonoBehaviour {
 		connecting = false;
 
 		GameObject obj = SpawnHero (selectedHeroName, selectedTeam);
-		//gm.player = obj;
 		gm.setPlayer (selectedHeroName);
-
+		gm.GetComponent<ObjectPool> ().Initialize (selectedTeam);
 		gameObject.GetComponent<UIManager> ().initializeUI ();
+
 	}
 
 	void OnGUI()
@@ -100,20 +100,15 @@ public class NetworkManager : MonoBehaviour {
 		Vector3 direction = (destPos - startPos).normalized;
 
 		GameObject heroObj = PhotonNetwork.Instantiate (heroName, 
-		                                                startPos, Quaternion.LookRotation (direction), 0);
-		heroObj.GetComponent<HeroController> ().attachedTeam = team;
-		heroObj.GetComponent<HeroController> ().startPos = startPos;
-		heroObj.GetComponent<HeroController> ().endPos = destPos;
+		                    	startPos, Quaternion.LookRotation (direction), 0);
+
+		heroObj.GetComponent<HeroController> ().init_hero (team, startPos, destPos);
+
 		gm.addHeroObj (heroObj);
 
-
 		return heroObj;
-
 	}
-
-
-
-
+	
 	// Update is called once per frame
 	void Update () {
 		if (PhotonNetwork.connected) {

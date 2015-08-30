@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class ObjectPool : MonoBehaviour
 {
-	
 	public static ObjectPool instance;
 	
 	/// <summary>
@@ -33,12 +32,15 @@ public class ObjectPool : MonoBehaviour
 	{
 		instance = this;
 	}
-	
-	// Use this for initialization
+
 	void Start ()
 	{
 		containerObject = new GameObject("ObjectPool");
 
+	}
+	// Use this for initialization
+	public void Initialize (GameManager.team team)
+	{
 		//Loop through the object prefabs and make a new list for each one.
 		//We do this because the pool can only support prefabs set to it in the editor,
 		//so we can assume the lists of pooled objects are in the same order as object prefabs in the array
@@ -54,17 +56,24 @@ public class ObjectPool : MonoBehaviour
 			if(i < amountToBuffer.Length) bufferAmount = amountToBuffer[i];
 			else
 				bufferAmount = defaultBufferAmount;
-			
+
 			for ( int n=0; n<bufferAmount; n++)
 			{
-				GameObject newObj = Instantiate(objectPrefab) as GameObject;
-				newObj.name = objectPrefab.name;
+				GameObject newObj = null;
 
-				if (newObj.name == "minion_alpha")
+				if (team == GameManager.team.ALPHA && objectPrefab.name == "minion_alpha") {
+					newObj = PhotonNetwork.Instantiate (objectPrefab.name, 
+					                                    Vector3.zero, Quaternion.identity, 0);
+					newObj.name = objectPrefab.name;
 					newObj.GetComponent<MinionController>().setTeam(GameManager.team.ALPHA);
-				else if (newObj.name == "minion_beta")
+				} else if (team == GameManager.team.BETA && objectPrefab.name == "minion_beta") {
+					newObj = PhotonNetwork.Instantiate (objectPrefab.name, 
+					                                    Vector3.zero, Quaternion.identity, 0);
+					newObj.name = objectPrefab.name;
 					newObj.GetComponent<MinionController>().setTeam(GameManager.team.BETA);
-
+				} else {
+					newObj = Instantiate(objectPrefab) as GameObject;
+				}
 				PoolObject(newObj);
 			}
 			
