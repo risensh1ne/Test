@@ -22,7 +22,7 @@ Platform assembly: D:\Unity5\Projects\Test\test_Data\Managed\UnityEngine.Analyti
 Loading D:\Unity5\Projects\Test\test_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
 Platform assembly: D:\Unity5\Projects\Test\test_Data\Managed\Photon3Unity3D.dll (this message is harmless)
 Loading D:\Unity5\Projects\Test\test_Data\Managed\Photon3Unity3D.dll into Unity Child Domain
-- Completed reload, in  0.073 seconds
+- Completed reload, in  0.078 seconds
 desktop: 1920x1200 60Hz; virtual: 3840x1200 at 0,0
 <RI> Initializing input.
 XInput1_3.dll not found. Trying XInput9_1_0.dll instead...
@@ -30,10 +30,7 @@ XInput1_3.dll not found. Trying XInput9_1_0.dll instead...
 <RI> Initialized touch support.
 Platform assembly: D:\Unity5\Projects\Test\test_Data\Managed\System.Core.dll (this message is harmless)
 Platform assembly: D:\Unity5\Projects\Test\test_Data\Managed\System.dll (this message is harmless)
-Can't find Player object
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
-
+Shader 'Legacy Shaders/Bumped Specular': fallback shader 'Legacy Shaders/Specular' not found
 NullReferenceException: Object reference not set to an instance of an object
   at CameraControl.Start () [0x00000] in <filename unknown>:0 
  
@@ -49,7 +46,16 @@ NullReferenceException: Object reference not set to an instance of an object
 (Filename:  Line: -1)
 
 Setting up 1 worker threads for Enlighten.
-  Thread -> id: 2154 -> priority: 1 
+  Thread -> id: 2244 -> priority: 1 
+Can't find Player object
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+NullReferenceException: Object reference not set to an instance of an object
+  at CameraControl.Update () [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
 Can't find Player object
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
@@ -666,72 +672,9 @@ NullReferenceException: Object reference not set to an instance of an object
  
 (Filename:  Line: -1)
 
-Can't find Player object
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at CameraControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Can't find Player object
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at CameraControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Can't find Player object
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at CameraControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Can't find Player object
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at CameraControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
 OnJoinedLobby
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
-
-Can't find Player object
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at CameraControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Can't find Player object
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at CameraControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Can't find Player object
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at CameraControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
 
 Can't find Player object
  
@@ -953,15 +896,75 @@ NullReferenceException: Object reference not set to an instance of an object
  
 (Filename:  Line: -1)
 
+Can't find Player object
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+NullReferenceException: Object reference not set to an instance of an object
+  at CameraControl.Update () [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+Can't find Player object
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+NullReferenceException: Object reference not set to an instance of an object
+  at CameraControl.Update () [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
 OnJoinedRoom
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
-1
+BETA
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
-1
+BETA
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+ALPHA
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ObjectPool.PoolObject (UnityEngine.GameObject obj) [0x00000] in <filename unknown>:0 
+  at TowerController+<Fire>c__Iterator9.MoveNext () [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ObjectPool.PoolObject (UnityEngine.GameObject obj) [0x00000] in <filename unknown>:0 
+  at TowerController+<Fire>c__Iterator9.MoveNext () [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ObjectPool.PoolObject (UnityEngine.GameObject obj) [0x00000] in <filename unknown>:0 
+  at TowerController+<Fire>c__Iterator9.MoveNext () [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+Received OnSerialization for view ID 2005. We have no such PhotonView! Ignored this if you're leaving a room. State: Joined
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Received OnSerialization for view ID 2005. We have no such PhotonView! Ignored this if you're leaving a room. State: Joined
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Received OnSerialization for view ID 2013. We have no such PhotonView! Ignored this if you're leaving a room. State: Joined
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Received OnSerialization for view ID 2013. We have no such PhotonView! Ignored this if you're leaving a room. State: Joined
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Received OnSerialization for view ID 2013. We have no such PhotonView! Ignored this if you're leaving a room. State: Joined
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 

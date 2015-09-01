@@ -45,7 +45,7 @@ public class ObjectPool : MonoBehaviour
 		//We do this because the pool can only support prefabs set to it in the editor,
 		//so we can assume the lists of pooled objects are in the same order as object prefabs in the array
 		pooledObjects = new List<GameObject>[objectPrefabs.Length];
-		
+
 		int i = 0;
 		foreach ( GameObject objectPrefab in objectPrefabs )
 		{
@@ -61,19 +61,8 @@ public class ObjectPool : MonoBehaviour
 			{
 				GameObject newObj = null;
 
-				if (team == GameManager.team.ALPHA && objectPrefab.name == "minion_alpha") {
-					newObj = PhotonNetwork.Instantiate (objectPrefab.name, 
-					                                    Vector3.zero, Quaternion.identity, 0);
-					newObj.name = objectPrefab.name;
-					newObj.GetComponent<MinionController>().setTeam(GameManager.team.ALPHA);
-				} else if (team == GameManager.team.BETA && objectPrefab.name == "minion_beta") {
-					newObj = PhotonNetwork.Instantiate (objectPrefab.name, 
-					                                    Vector3.zero, Quaternion.identity, 0);
-					newObj.name = objectPrefab.name;
-					newObj.GetComponent<MinionController>().setTeam(GameManager.team.BETA);
-				} else {
-					newObj = Instantiate(objectPrefab) as GameObject;
-				}
+				newObj = Instantiate(objectPrefab) as GameObject;
+				newObj.name = objectPrefab.name;
 				PoolObject(newObj);
 			}
 			

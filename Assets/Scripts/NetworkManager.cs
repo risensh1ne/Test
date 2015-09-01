@@ -46,7 +46,7 @@ public class NetworkManager : MonoBehaviour {
 		gm.setPlayer (selectedHeroName);
 		gm.GetComponent<ObjectPool> ().Initialize (selectedTeam);
 		gameObject.GetComponent<UIManager> ().initializeUI ();
-
+		gm.gameStart ();
 	}
 
 	void OnGUI()

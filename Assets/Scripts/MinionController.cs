@@ -3,6 +3,11 @@ using System.Collections;
 
 public class MinionController : Photon.MonoBehaviour, IPlayer {
 
+	public GameObject gm;
+
+	public enum CharacterState {STATE_MOVING, STATE_ATTACKING, STATE_DEAD};
+	public CharacterState curr_state;
+
 	public float health = 50.0f;
 	[System.NonSerialized]
 	public float lookRange = 4.0f;
@@ -19,19 +24,16 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 	private bool gotFirstUpdate;
 
 	private float my_exp_val = 100.0f;
-
-	GameObject alphaHome;
-	GameObject betaHome;
-
+	
 	GameObject targetEnemy;
 
-	bool bWalking;
+	bool bMoving;
 	bool bAttacking;
 	bool bDead;
 
 	private GameObject lastAttackedBy;
 
-	Animator anim;
+	public Animator anim;
 
 	public GameManager.team checkTeam() {
 		return attachedTeam;
@@ -39,20 +41,29 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 	public bool isMoving 
 	{
-		get { return bWalking; }
-		set { bWalking = value; }
+		get { return bMoving; }
+		set { 
+			bMoving = value; 
+			anim.SetBool ("isMoving", value);
+		}
 	}
-
+	
 	public bool isAttacking 
 	{
 		get { return bAttacking; }
-		set { bAttacking = value; }
+		set { 
+			bAttacking = value; 
+			anim.SetBool ("isAttacking", value);
+		}
 	}
-
+	
 	public bool isDead 
 	{
 		get { return bDead; }
-		set { bDead = value; }
+		set { 
+			bDead = value; 
+			anim.SetBool ("isDead", value);
+		}
 	}
 
 	public void SetAttacker(GameObject attacker)
@@ -62,18 +73,32 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 	// Use this for initialization
 	void Start () {
-		InitState ();
+
 	}
 
-	public void setTeam(GameManager.team team) {
-		alphaHome = GameObject.Find ("targetPosition_alpha");	
-		betaHome = GameObject.Find ("targetPosition_beta");
-		Debug.Log ("!!!");
+	public void initState(GameManager.team team) {
+
+		if (gm == null)
+			gm = GameObject.Find ("_GM");
+
 		attachedTeam = team;
+
+		if (team == GameManager.team.BETA) {
+			startPos = gm.GetComponent<GameManager>().betaHome.position;
+			endPos = gm.GetComponent<GameManager>().alphaHome.position;
+		} else {
+			startPos = gm.GetComponent<GameManager>().alphaHome.position;
+			endPos = gm.GetComponent<GameManager>().betaHome.position;
+		}
+
+		resetState ();
 	}
 
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) 
 	{
+		if (anim == null) 
+			anim = GetComponent<Animator> ();
+
 		if (stream.isWriting) {
 			stream.SendNext (gameObject.transform.position);
 			stream.SendNext (gameObject.transform.rotation);
@@ -100,11 +125,34 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 			if (health == 0) {
 				StartCoroutine("Die");
 			}
-		}
-		
+		}		
 	}
 
-	public void InitState() {
+	public void changeStateTo(CharacterState newState)
+	{
+		if (newState == CharacterState.STATE_ATTACKING) {
+			if (curr_state == CharacterState.STATE_MOVING) {
+				isAttacking = true;
+			} 
+		} else if (newState == CharacterState.STATE_MOVING) {
+			if (curr_state == CharacterState.STATE_ATTACKING) {
+				isAttacking = false;
+			} 
+		} else if (newState == CharacterState.STATE_DEAD) {
+			isDead = true;
+			if (curr_state == CharacterState.STATE_ATTACKING) {
+				isAttacking = false;
+			} 
+			targetEnemy = null;
+		}
+		
+		curr_state = newState; 
+	}
+
+	public void resetState() {
+
+		if (anim == null) 
+			anim = GetComponent<Animator> ();
 
 		isDead = false;
 		isMoving = false;
@@ -115,25 +163,11 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 		health = 50.0f;
 		walkSpeed = 2.0f;
 
-		anim = GetComponent<Animator> ();
-		anim.SetBool ("isWalking", true);
-		anim.SetBool ("isAttacking", false);
-		anim.SetBool ("isDead", false);
-
-		if (attachedTeam == GameManager.team.ALPHA) {
-			startPos = alphaHome.transform.position;
-			endPos = betaHome.transform.position;
-		} else if (attachedTeam == GameManager.team.BETA) {
-			startPos = betaHome.transform.position;
-			endPos = alphaHome.transform.position;
-		}
+		changeStateTo (CharacterState.STATE_MOVING);
 
 		Vector3 direction = (endPos - transform.position).normalized;
 		transform.position = startPos;
 		transform.rotation = Quaternion.LookRotation (direction);
-	}
-	public void OnSpawn() {
-		InitState ();
 	}
 
 	public void OnNormalAttack() {
@@ -141,12 +175,9 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 			if (targetEnemy.tag == "Player" || targetEnemy.tag == "minion" || targetEnemy.tag == "defender" ) {
 				IPlayer ip = targetEnemy.GetComponent<IPlayer>();
 				if (ip.isDead) {
-					targetEnemy = null;
-					isAttacking = false;
-					
-					anim.SetBool ("isAttacking", false);
+					changeStateTo (CharacterState.STATE_DEAD);
 				} else {
-					targetEnemy.GetComponent<PhotonView> ().RPC ("DamageSync", PhotonTargets.Others, 10.0f);
+					targetEnemy.GetComponent<PhotonView> ().RPC ("DamageSync", PhotonTargets.All, 10.0f);
 				}
 			}
 		}
@@ -171,20 +202,21 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 	IEnumerator Die()
 	{
+		if (anim == null) 
+			anim = GetComponent<Animator> ();
+
 		isDead = true;
 		isMoving = false;
 		isAttacking = false;
 
-		anim.SetBool ("isAttacking", false);
-		anim.SetBool ("isWalking", false);
-		anim.SetBool ("isDead", true);
+		changeStateTo (CharacterState.STATE_DEAD);
 
 		if (lastAttackedBy && lastAttackedBy.tag == "Player") {
 			lastAttackedBy.GetComponent<HeroController>().GainExp(my_exp_val);
 		}
 
 		yield return new WaitForSeconds (5.0f);
-		ObjectPool.instance.PoolObject (gameObject);
+		PhotonView.DestroyObject (gameObject);
 	}
 
 	void OnParticleCollision(GameObject other)
@@ -192,7 +224,6 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 		if (other.name == "Fireball") {
 			damage (40.0f);
 		} else if (other.name == "Explosion") {
-
 			damage (30.0f);
 		}
 	}
@@ -246,43 +277,27 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 				if (!ip.isDead) {
 					if (enemyDistance <= attackRange) {
-						if (!isAttacking) {
-							isAttacking = true;
-							anim.SetBool ("isAttacking", true);
-						}
+						changeStateTo(CharacterState.STATE_ATTACKING);
 					} else {
-						if (isAttacking) {
-							isAttacking = false;
-							anim.SetBool ("isAttacking", false);
-						} else {
-							direction = (cldrs [enemyIndex].transform.position - transform.position).normalized;
-							transform.position += direction * walkSpeed * Time.fixedDeltaTime;
-							transform.rotation = Quaternion.LookRotation (direction);
-						}
+						changeStateTo(CharacterState.STATE_MOVING);
+
+						direction = (cldrs [enemyIndex].transform.position - transform.position).normalized;
+						transform.position += direction * walkSpeed * Time.fixedDeltaTime;
+						transform.rotation = Quaternion.LookRotation (direction);
 					}
 				} else {
+					changeStateTo(CharacterState.STATE_MOVING);
+
 					direction = (endPos - transform.position).normalized;
 					transform.position += direction * walkSpeed * Time.fixedDeltaTime;
 					transform.rotation = Quaternion.LookRotation (direction);
-					
-					targetEnemy = null;
-					if (isAttacking) {
-						isAttacking = false;
-						anim.SetBool ("isAttacking", false);
-					}
 				}
 			} else {
+				changeStateTo(CharacterState.STATE_MOVING);
+
 				direction = (endPos - transform.position).normalized;
 				transform.position += direction * walkSpeed * Time.fixedDeltaTime;
 				transform.rotation = Quaternion.LookRotation (direction);
-
-				targetEnemy = null;
-				if (isAttacking) {
-					isAttacking = false;
-					anim.SetBool ("isAttacking", false);
-				}
-
-
 			}
 		} else {
 			transform.position = realPosition; //Vector3.Lerp(transform.position, realPosition, 0.1f);

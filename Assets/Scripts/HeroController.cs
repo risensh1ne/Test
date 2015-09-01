@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 public class HeroController : Photon.MonoBehaviour, IPlayer {
 
-	public enum CharacterState {STATE_IDLE, STATE_MOVING, STATE_ATTACKING, STATE_SKILL};
+	public enum CharacterState {STATE_IDLE, STATE_MOVING, STATE_ATTACKING, STATE_SKILL, STATE_DEAD};
 	public CharacterState curr_state;
 	[System.NonSerialized]
 	public float moveSpeed = 3.0f;
@@ -65,6 +65,9 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) 
 	{
+		if (anim == null)
+			anim = GetComponent<Animator> ();
+
 		if (stream.isWriting) {
 			stream.SendNext (gameObject.transform.position);
 			stream.SendNext (gameObject.transform.rotation);
@@ -101,7 +104,6 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 				StartCoroutine("Die");
 			}
 		}
-		
 	}
 
 	public void ToggleSkillTargetMode(int skill, float range)
@@ -219,6 +221,15 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 				isMoving = false;
 			}
 			destinationPos = -Vector3.one;
+		} else if (newState == CharacterState.STATE_DEAD) {
+			isDead = true;
+			targetEnemy = null;
+
+			if (curr_state == CharacterState.STATE_ATTACKING) {
+				isAttacking = false;
+			} else if (curr_state == CharacterState.STATE_MOVING) {
+				isMoving = false;
+			}
 		}
 
 		curr_state = newState; 
@@ -296,7 +307,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 	IEnumerator Die()
 	{
-		isDead = true;
+		changeStateTo (CharacterState.STATE_DEAD);
 
 		yield return new WaitForSeconds (4.0f);
 
@@ -310,7 +321,12 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		isAttacking = false;
 		autoAttack = false;
 
-		curr_state = CharacterState.STATE_IDLE;
+		transform.position = startPos;
+		if (!photonView.isMine)
+			destinationPos = endPos;
+
+		changeStateTo (CharacterState.STATE_IDLE);
+
 		targetEnemy = null;
 		lastAttackedBy = null;
 
@@ -320,10 +336,6 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		gm.GetComponent<PlayerController> ().updateHealthBar ();
 		gm.GetComponent<PlayerController> ().updateManaBar ();
 		gm.GetComponent<PlayerController> ().updateLevelText ();
-
-		transform.position = startPos;
-		if (!photonView.isMine)
-			destinationPos = endPos;
 	}
 
 	void updateMaxStats()
@@ -531,8 +543,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 			if (!ip.isDead) {
 				ip.SetAttacker(this.gameObject);
-				//ip.damage (damage);
-				targetEnemy.GetComponent<PhotonView> ().RPC ("DamageSync", PhotonTargets.Others, damage);
+				targetEnemy.GetComponent<PhotonView> ().RPC ("DamageSync", PhotonTargets.All, damage);
 			}
 		}
 	}

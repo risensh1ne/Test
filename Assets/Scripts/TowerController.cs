@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class TowerController : MonoBehaviour, IPlayer {
+public class TowerController : Photon.MonoBehaviour, IPlayer {
 
 	public float health = 500.0f;
 	public float attackRange = 8.0f;
@@ -114,15 +114,19 @@ public class TowerController : MonoBehaviour, IPlayer {
 			targetEnemy = cldrs [enemyIndex].gameObject;
 			IPlayer ip = targetEnemy.GetComponent<IPlayer>();
 			if (!ip.isDead)
-				StartCoroutine ("Fire");
+				gameObject.GetComponent<PhotonView> ().RPC ("attack", PhotonTargets.All, targetEnemy.transform.position);
 		}
-
 	}
 
-	IEnumerator Fire() {
+	[PunRPC]
+	void attack(Vector3 targetPos) {
+		StartCoroutine ("Fire", targetPos);
+	}
+
+	IEnumerator Fire(Vector3 targetPos) {
 		GameObject fireballObj = ObjectPool.instance.GetObjectForType ("Fireball", true);
 		if (fireballObj != null) {
-			Vector3 dir = (targetEnemy.transform.position - firePoint.transform.position).normalized;
+			Vector3 dir = (targetPos - firePoint.transform.position).normalized;
 			fireballObj.transform.position = firePoint.position;
 			fireballObj.transform.rotation = Quaternion.LookRotation (dir);
 			isAttacking = true;

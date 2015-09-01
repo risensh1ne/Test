@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour {
 
 	public float spawnPeriod = 2.0f;
 	float nextSpawnRemaining;
+	bool startSpawn;
 
 	public GameObject[] heroPrefabs;
 	public List<GameObject> heros;
@@ -22,9 +23,15 @@ public class GameManager : MonoBehaviour {
 
 		heros = new List<GameObject>();
 
+		startSpawn = false;
 		nextSpawnRemaining = spawnPeriod;
-		StartCoroutine ("SpawnMinion");
 
+	}
+
+	public void gameStart()
+	{
+		startSpawn = true;
+		StartCoroutine ("SpawnMinion");
 	}
 
 	public void setPlayer(string heroName)
@@ -62,20 +69,26 @@ public class GameManager : MonoBehaviour {
 	}
 
 	IEnumerator SpawnMinion() {
-
+	
 		yield return new WaitForSeconds (1.0f);
 
 		if (player.GetComponent<HeroController> ().checkTeam () == GameManager.team.ALPHA) {
-			GameObject minionAlpha = ObjectPool.instance.GetObjectForType ("minion_alpha", true);
+			GameObject minionAlpha = PhotonNetwork.Instantiate ("minion_alpha", 
+			                           alphaHome.position, Quaternion.identity, 0);
+
 			if (minionAlpha != null) {
-				minionAlpha.GetComponent<MinionController> ().OnSpawn ();
+				minionAlpha.GetComponent<MinionController> ().initState (GameManager.team.ALPHA);
+				minionAlpha.GetComponent<MinionController> ().resetState ();
 			}
 		}
 
 		if (player.GetComponent<HeroController> ().checkTeam () == GameManager.team.BETA) {
-			GameObject minionBeta = ObjectPool.instance.GetObjectForType ("minion_beta", true);
+			GameObject minionBeta = PhotonNetwork.Instantiate ("minion_beta", 
+			                                                    betaHome.position, Quaternion.identity, 0);
+
 			if (minionBeta != null) {
-				minionBeta.GetComponent<MinionController> ().OnSpawn ();
+				minionBeta.GetComponent<MinionController> ().initState (GameManager.team.BETA);
+				minionBeta.GetComponent<MinionController> ().resetState ();
 			}
 		}
 
@@ -84,11 +97,13 @@ public class GameManager : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		nextSpawnRemaining -= Time.deltaTime;
+		if (startSpawn) {
+			nextSpawnRemaining -= Time.deltaTime;
 
-		if (nextSpawnRemaining <= 0) {
-			nextSpawnRemaining = spawnPeriod;
-			StartCoroutine ("SpawnMinion");
+			if (nextSpawnRemaining <= 0) {
+				nextSpawnRemaining = spawnPeriod;
+				StartCoroutine ("SpawnMinion");
+			}
 		}
 
 	}
