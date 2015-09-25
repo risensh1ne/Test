@@ -73,6 +73,7 @@ public class GameManager : MonoBehaviour {
 		yield return new WaitForSeconds (1.0f);
 
 		if (player.GetComponent<HeroController> ().checkTeam () == GameManager.team.ALPHA) {
+
 			GameObject minionAlpha = PhotonNetwork.Instantiate ("minion_alpha", 
 			                           alphaHome.position, Quaternion.identity, 0);
 

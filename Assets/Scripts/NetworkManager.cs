@@ -13,23 +13,29 @@ public class NetworkManager : MonoBehaviour {
 
 		gm = gameObject.GetComponent<GameManager> ();
 
-		PhotonNetwork.player.name = PlayerPrefs.GetString ("username", "risenshine");
+		//PhotonNetwork.player.name = PlayerPrefs.GetString ("username", "risenshine");
 		connecting = false;
 	}
 
 	void OnDestroy() {
-		PlayerPrefs.SetString("username", PhotonNetwork.player.name);
+		//PlayerPrefs.SetString("username", PhotonNetwork.player.name);
 	}
 
+	/*
 	void Connect(string heroName, GameManager.team team) {
 		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
 
 		selectedHeroName = heroName;
 		selectedTeam = team;
 	}
+	*/
+	void Connect() {
+		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
+	}
 
 	void OnJoinedLobby() {
 		Debug.Log ("OnJoinedLobby");
+
 		PhotonNetwork.JoinRandomRoom();
 	}
 
@@ -39,7 +45,7 @@ public class NetworkManager : MonoBehaviour {
 	}
 
 	void OnJoinedRoom() {
-		Debug.Log ("OnJoinedRoom");
+		Debug.Log ("OnJoinedRoom");	
 		connecting = false;
 
 		GameObject obj = SpawnHero (selectedHeroName, selectedTeam);
@@ -49,10 +55,17 @@ public class NetworkManager : MonoBehaviour {
 		gm.gameStart ();
 	}
 
+	void OnLoginButtonClicked()
+	{
+		connecting = true;
+		Connect ();
+	}
+
 	void OnGUI()
 	{
+		/*
 		GUILayout.Label( PhotonNetwork.connectionStateDetailed.ToString() );
-		
+
 		if(PhotonNetwork.connected == false && connecting == false ) {
 			// We have not yet connected, so ask the player for online vs offline mode.
 			GUILayout.BeginArea( new Rect(0, 0, Screen.width, Screen.height) );
@@ -83,6 +96,7 @@ public class NetworkManager : MonoBehaviour {
 			GUILayout.EndHorizontal();
 			GUILayout.EndArea();
 		}
+		*/
 	}
 	
 	GameObject SpawnHero(string heroName, GameManager.team team)
