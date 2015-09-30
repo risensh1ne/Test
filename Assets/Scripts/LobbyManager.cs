@@ -55,18 +55,25 @@ public class LobbyManager : MonoBehaviour {
 		buttonCreateGame.SetActive (true);
 		roomCtrl.SetActive (true);
 
-
+		for (int i=0; i < 3; i++) {
+			GameObject roomInfo = Instantiate(roomPrefab) as GameObject;
+			GameObject label = roomInfo.transform.FindChild("roomName").gameObject;		
+			label.GetComponent<UILabel>().text = "test" + i;
+			NGUITools.AddChild(tableRoom, roomInfo);
+			
+		}
+		
+		tableRoom.GetComponent<UITable>().Reposition();
 	}
 
 	void OnReceivedRoomListUpdate() {
 		if (PhotonNetwork.insideLobby) {
-
 			foreach (RoomInfo room in PhotonNetwork.GetRoomList()) {
 				GameObject roomInfo = Instantiate(roomPrefab) as GameObject;
 
-
+				
 				GameObject label = roomInfo.transform.FindChild("roomName").gameObject;
-
+				
 				label.GetComponent<UILabel>().text = room.name;
 				//label.GetComponent<UILabel>().width = 300;
 				roomInfo.transform.SetParent (tableRoom.transform);
