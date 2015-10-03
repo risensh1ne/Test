@@ -22,7 +22,7 @@ Platform assembly: D:\Unity5\Projects\Test\test_Data\Managed\UnityEngine.Analyti
 Loading D:\Unity5\Projects\Test\test_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
 Platform assembly: D:\Unity5\Projects\Test\test_Data\Managed\Photon3Unity3D.dll (this message is harmless)
 Loading D:\Unity5\Projects\Test\test_Data\Managed\Photon3Unity3D.dll into Unity Child Domain
-- Completed reload, in  0.076 seconds
+- Completed reload, in  0.086 seconds
 desktop: 1920x1200 60Hz; virtual: 3840x1200 at 0,0
 <RI> Initializing input.
 XInput1_3.dll not found. Trying XInput9_1_0.dll instead...
@@ -30,10 +30,6 @@ XInput1_3.dll not found. Trying XInput9_1_0.dll instead...
 <RI> Initialized touch support.
 Platform assembly: D:\Unity5\Projects\Test\test_Data\Managed\System.Core.dll (this message is harmless)
 Platform assembly: D:\Unity5\Projects\Test\test_Data\Managed\System.dll (this message is harmless)
-aaa
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
-
 UserId sent: aaa
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
@@ -46,11 +42,15 @@ OnCreatedRoom
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
-aaa/4
+OnJoinedRoom
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
-OnJoinedRoom
+ALPHA
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+OnJoinedLobby
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 

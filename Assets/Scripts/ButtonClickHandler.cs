@@ -25,6 +25,20 @@ public class ButtonClickHandler : MonoBehaviour {
 		lm.GetComponent<LobbyManager> ().JoinGame ();
 	}
 
+	public void OnRoomClick(string roomName)
+	{
+		lm.GetComponent<LobbyManager> ().SetRoomSelected(roomName);
+	}
+
+	public void OnHeroButtonClick(string name)
+	{
+		Debug.Log(name);
+	}
+
+	public void OnExitRoomClick()
+	{
+		lm.GetComponent<LobbyManager> ().ExitRoom ();
+	}
 	// Update is called once per frame
 	void Update () {
 	
