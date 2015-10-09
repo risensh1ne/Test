@@ -13,8 +13,25 @@ public class NetworkManager : MonoBehaviour {
 
 		gm = gameObject.GetComponent<GameManager> ();
 
-		//PhotonNetwork.player.name = PlayerPrefs.GetString ("username", "risenshine");
+		/*
 		connecting = false;
+
+		PhotonNetwork.player.name = "Gion";
+
+		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
+		PhotonNetwork.JoinRandomRoom();
+		*/
+
+		/*
+		selectedHeroName = "Gion";
+		selectedTeam = GameManager.team.ALPHA;
+
+		GameObject obj = SpawnHero (selectedHeroName, selectedTeam);
+		gm.setPlayer (selectedHeroName);
+		gm.GetComponent<ObjectPool> ().Initialize (selectedTeam);
+		gameObject.GetComponent<UIManager> ().initializeUI ();
+		gm.gameStart ();
+		*/
 	}
 
 	void OnDestroy() {
@@ -28,10 +45,11 @@ public class NetworkManager : MonoBehaviour {
 		selectedHeroName = heroName;
 		selectedTeam = team;
 	}
-	*/
+
 	void Connect() {
 		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
 	}
+
 
 	void OnJoinedLobby() {
 		Debug.Log ("OnJoinedLobby");
@@ -55,11 +73,13 @@ public class NetworkManager : MonoBehaviour {
 		gm.gameStart ();
 	}
 
+
 	void OnLoginButtonClicked()
 	{
 		connecting = true;
 		Connect ();
 	}
+	*/
 
 	void OnGUI()
 	{
@@ -97,6 +117,7 @@ public class NetworkManager : MonoBehaviour {
 			GUILayout.EndArea();
 		}
 		*/
+
 	}
 	
 	GameObject SpawnHero(string heroName, GameManager.team team)

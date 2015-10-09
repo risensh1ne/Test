@@ -8,6 +8,9 @@ public class GameManager : MonoBehaviour {
 	float nextSpawnRemaining;
 	bool startSpawn;
 
+	public string myHeroName;
+	public string userName;
+	public GameManager.team myTeam;
 	public GameObject[] heroPrefabs;
 	public List<GameObject> heros;
 
@@ -26,6 +29,15 @@ public class GameManager : MonoBehaviour {
 		startSpawn = false;
 		nextSpawnRemaining = spawnPeriod;
 
+		userName = PlayerPrefs.GetString ("userName");
+		myHeroName = PlayerPrefs.GetString ("heroName");
+		myTeam = (GameManager.team)PlayerPrefs.GetInt ("userTeam");
+	
+		GameObject obj = SpawnHero ();
+		setPlayer ();
+		GetComponent<ObjectPool> ().Initialize (myTeam);
+		gameObject.GetComponent<UIManager> ().initializeUI ();
+		gameStart ();
 	}
 
 	public void gameStart()
@@ -34,10 +46,10 @@ public class GameManager : MonoBehaviour {
 		StartCoroutine ("SpawnMinion");
 	}
 
-	public void setPlayer(string heroName)
+	public void setPlayer()
 	{
 		for (int i=0; i < heros.Count; i++) {
-			if (heros [i].name == heroName + "(Clone)") {
+			if (heros [i].name == myHeroName + "(Clone)") {
 				player = heros[i].gameObject;
 				heros [i].GetComponent<HeroController> ().destinationPos = - Vector3.one;
 				break;
@@ -66,6 +78,30 @@ public class GameManager : MonoBehaviour {
 				return heros [i];
 		}
 		return null;
+	}
+
+	GameObject SpawnHero()
+	{
+		Vector3 startPos, destPos;
+		
+		if (myTeam == GameManager.team.BETA) {
+			startPos = betaHome.transform.position;
+			destPos = alphaHome.transform.position;
+		} else {
+			startPos = alphaHome.transform.position;
+			destPos = betaHome.transform.position;
+		}
+		
+		Vector3 direction = (destPos - startPos).normalized;
+		
+		GameObject heroObj = PhotonNetwork.Instantiate (myHeroName, 
+		                                                startPos, Quaternion.LookRotation (direction), 0);
+		
+		heroObj.GetComponent<HeroController> ().init_hero (myTeam, startPos, destPos);
+		
+		addHeroObj (heroObj);
+		
+		return heroObj;
 	}
 
 	IEnumerator SpawnMinion() {
