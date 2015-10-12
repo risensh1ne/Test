@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour {
 		myHeroName = PlayerPrefs.GetString ("heroName");
 		myTeam = (GameManager.team)PlayerPrefs.GetInt ("userTeam");
 	
+		Debug.Log(userName + " " + myHeroName + " " + myTeam);
 		GameObject obj = SpawnHero ();
 		setPlayer ();
 		GetComponent<ObjectPool> ().Initialize (myTeam);
