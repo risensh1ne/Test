@@ -31,9 +31,11 @@ public class LobbyManager : MonoBehaviour {
 
 	public GameObject buttonStartGame;
 
-	public GameObject chatInput;
+
+
+	public GameObject chatInputRoom;
 	public UILabel chatLabel;
-	public GameObject chatArea;
+	public GameObject chatAreaRoom;
 
 	bool connecting;
 
@@ -67,25 +69,29 @@ public class LobbyManager : MonoBehaviour {
 
 	public void StartGame() {
 
-		PlayerPrefs.SetString ("userName", userName);
-		PlayerPrefs.SetString ("heroName", heroName);
-		PlayerPrefs.SetInt ("userTeam", (int)team);
+		
 
-		Application.LoadLevel ("scene_main");
+        GetComponent<PhotonView>().RPC("RealStartGame", PhotonTargets.All);
 	}
 
 	public void SetRoomSelected(string roomName) {
 		selectedRoomName = roomName;
-	}
+        buttonJoinGame.GetComponent<UIButton>().isEnabled = true;
+    }
 
 	public void SelectHero(string name) {
 		heroName = name;
 
-		if (team == GameManager.team.ALPHA)
+		if (team == GameManager.team.ALPHA) 
 			alphaHeroSprite.GetComponent<UISprite> ().spriteName = name;
 		else 
 			betaHeroSprite.GetComponent<UISprite> ().spriteName = name;
-	}
+
+        Debug.Log(name);
+
+        string msg = team + ":" + heroName;
+        GetComponent<PhotonView>().RPC("UpdateHeroSelection", PhotonTargets.AllBuffered, msg);
+    }
 	
 	public void ExitRoom(){
 		string msg = team + ":" + userName;
@@ -107,11 +113,14 @@ public class LobbyManager : MonoBehaviour {
 		buttonCreateGame.SetActive (true);
 		buttonJoinGame.SetActive(true);
 		roomCtrl.SetActive (true);
-	}
+
+        buttonJoinGame.GetComponent<UIButton>().isEnabled = false;
+        selectedRoomName = "";
+    }
 
 	public void OnChat(string chatText) {
-		chatInput.GetComponent<UIInput> ().value = "";
-		chatInput.GetComponent<UIInput> ().isSelected = true;
+		chatInputRoom.GetComponent<UIInput> ().value = "";
+		chatInputRoom.GetComponent<UIInput> ().isSelected = true;
 
 		string chatMessage = "[" + userName + "] " + chatText;
 		GetComponent<PhotonView> ().RPC ("SendChatMessage", PhotonTargets.AllBuffered, chatMessage);
@@ -164,10 +173,14 @@ public class LobbyManager : MonoBehaviour {
 		
 		if (PhotonNetwork.inRoom) {
 			roomPanel.SetActive (true);
-			//buttonStartGame.GetComponent<UIButton>().isEnabled = false;
+            
+			buttonStartGame.GetComponent<UIButton>().isEnabled = false;
+            
 
+            string chatMessage = userName + " has joined the room";
+            GetComponent<PhotonView>().RPC("SendChatMessage", PhotonTargets.Others, chatMessage);
 
-			int numPlayersInRoom = 0;
+            int numPlayersInRoom = 0;
 			foreach(PhotonPlayer player in PhotonNetwork.playerList) {
 				numPlayersInRoom++;
 			}
@@ -185,10 +198,34 @@ public class LobbyManager : MonoBehaviour {
 
 	[PunRPC]
 	public void SendChatMessage(string chatMessage) {
-		chatArea.GetComponent<UITextList> ().Add (chatMessage);
+		chatAreaRoom.GetComponent<UITextList> ().Add (chatMessage);
 	}
 
-	[PunRPC]
+    [PunRPC]
+    public void UpdateHeroSelection(string txtInfo)
+    {
+        string[] infoList = txtInfo.Split(':');
+        string team = infoList[0];
+        string heroName = infoList[1];
+
+        Debug.Log(team + ":" + heroName);
+        if (team == "ALPHA")
+        {
+            alphaHeroSprite.GetComponent<UISprite>().spriteName = heroName;
+        }
+        else
+        {
+            betaHeroSprite.GetComponent<UISprite>().spriteName = heroName;
+        }
+
+        if (alphaHeroSprite.GetComponent<UISprite>().spriteName != "select_hero" &&
+            betaHeroSprite.GetComponent<UISprite>().spriteName != "select_hero")
+        {
+            buttonStartGame.GetComponent<UIButton>().isEnabled = true;
+        }
+    }
+
+    [PunRPC]
 	public void JoinPlayerInfo(string txtInfo) {
 
 		string[] infoList = txtInfo.Split (':');
@@ -212,15 +249,28 @@ public class LobbyManager : MonoBehaviour {
 		
 		if (team == "ALPHA") {
 			alphaHeroNameLabel.GetComponent<UILabel> ().text = "";
-		} else {
+            alphaHeroSprite.GetComponent<UISprite>().spriteName = "select_hero";
+        } else {
 			betaHeroNameLabel.GetComponent<UILabel> ().text = "";
-		}
-		
-	}
+            betaHeroSprite.GetComponent<UISprite>().spriteName = "select_hero";
+        }
 
+        buttonStartGame.GetComponent<UIButton>().isEnabled = false;
 
-	// Update is called once per frame
-	void Update () {
+    }
+
+    [PunRPC]
+    public void RealStartGame()
+    {
+        PlayerPrefs.SetString("userName", userName);
+        PlayerPrefs.SetString("heroName", heroName);
+        PlayerPrefs.SetInt("userTeam", (int)team);
+
+        Application.LoadLevel("scene_main");
+    }
+
+    // Update is called once per frame
+    void Update () {
 	
 	}
 }

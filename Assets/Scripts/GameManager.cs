@@ -21,6 +21,12 @@ public class GameManager : MonoBehaviour {
 	public Transform alphaHome;
 	public Transform betaHome;
 
+    [PunRPC]
+    public void NotifyReady()
+    {
+        gameStart();
+    }
+
 	// Use this for initialization
 	void Start () {
 
@@ -32,13 +38,13 @@ public class GameManager : MonoBehaviour {
 		userName = PlayerPrefs.GetString ("userName");
 		myHeroName = PlayerPrefs.GetString ("heroName");
 		myTeam = (GameManager.team)PlayerPrefs.GetInt ("userTeam");
-	
-		Debug.Log(userName + " " + myHeroName + " " + myTeam);
-		GameObject obj = SpawnHero ();
+
+        GameObject obj = SpawnHero ();
 		setPlayer ();
 		GetComponent<ObjectPool> ().Initialize (myTeam);
 		gameObject.GetComponent<UIManager> ().initializeUI ();
-		gameStart ();
+
+        GetComponent<PhotonView>().RPC("NotifyReady", PhotonTargets.OthersBuffered);        
 	}
 
 	public void gameStart()
@@ -84,7 +90,7 @@ public class GameManager : MonoBehaviour {
 	GameObject SpawnHero()
 	{
 		Vector3 startPos, destPos;
-		
+
 		if (myTeam == GameManager.team.BETA) {
 			startPos = betaHome.transform.position;
 			destPos = alphaHome.transform.position;
@@ -109,7 +115,7 @@ public class GameManager : MonoBehaviour {
 	
 		yield return new WaitForSeconds (1.0f);
 
-		if (player.GetComponent<HeroController> ().checkTeam () == GameManager.team.ALPHA) {
+		if (myTeam == GameManager.team.ALPHA) {
 
 			GameObject minionAlpha = PhotonNetwork.Instantiate ("minion_alpha", 
 			                           alphaHome.position, Quaternion.identity, 0);
@@ -118,9 +124,7 @@ public class GameManager : MonoBehaviour {
 				minionAlpha.GetComponent<MinionController> ().initState (GameManager.team.ALPHA);
 				minionAlpha.GetComponent<MinionController> ().resetState ();
 			}
-		}
-
-		if (player.GetComponent<HeroController> ().checkTeam () == GameManager.team.BETA) {
+		} else if (myTeam == GameManager.team.BETA) {
 			GameObject minionBeta = PhotonNetwork.Instantiate ("minion_beta", 
 			                                                    betaHome.position, Quaternion.identity, 0);
 

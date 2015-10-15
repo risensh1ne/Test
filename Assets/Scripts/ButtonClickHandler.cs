@@ -32,13 +32,15 @@ public class ButtonClickHandler : MonoBehaviour {
 
 	public void OnHeroButtonClick(string name)
 	{
+        Debug.Log(name + "clicked!!");
 		lm.GetComponent<LobbyManager>().SelectHero(name);
 	}
 
 	public void OnStartGameButtonClick()
 	{
 		lm.GetComponent<LobbyManager> ().StartGame ();
-	}
+
+    }
 
 	public void OnExitRoomClick()
 	{
