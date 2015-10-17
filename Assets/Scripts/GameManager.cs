@@ -11,8 +11,6 @@ public class GameManager : MonoBehaviour {
 	public string myHeroName;
 	public string userName;
 	public GameManager.team myTeam;
-	public GameObject[] heroPrefabs;
-	public List<GameObject> heros;
 
 	public enum team { ALPHA, BETA };
 
@@ -21,38 +19,67 @@ public class GameManager : MonoBehaviour {
 	public Transform alphaHome;
 	public Transform betaHome;
 
-    [PunRPC]
-    public void NotifyReady()
+
+    /*
+    private void TestConnect()
     {
+        PhotonNetwork.player.name = "seo";
+        PhotonNetwork.ConnectUsingSettings("risenhine games 001");
+    }
+
+    void OnJoinedLobby()
+    {
+        Debug.Log("OnJoinedLobby");
+        RoomOptions roomOptions = new RoomOptions() { isVisible = false, maxPlayers = 4 };
+        PhotonNetwork.JoinOrCreateRoom("room1", roomOptions, TypedLobby.Default);
+    }
+
+    void OnJoinedRoom()
+    {
+        Debug.Log("OnJoinedRoom");
+
+        PlayerPrefs.SetString("userName", "seo");
+        PlayerPrefs.SetString("heroName", "SwordMaster");
+        PlayerPrefs.SetInt("userTeam", (int)GameManager.team.ALPHA);
+
+        userName = PlayerPrefs.GetString("userName");
+        myHeroName = PlayerPrefs.GetString("heroName");
+        myTeam = (GameManager.team)PlayerPrefs.GetInt("userTeam");
+
         gameStart();
     }
+    */
 
 	// Use this for initialization
 	void Start () {
 
-		heros = new List<GameObject>();
-
 		startSpawn = false;
 		nextSpawnRemaining = spawnPeriod;
 
-		userName = PlayerPrefs.GetString ("userName");
-		myHeroName = PlayerPrefs.GetString ("heroName");
-		myTeam = (GameManager.team)PlayerPrefs.GetInt ("userTeam");
-
-        GameObject obj = SpawnHero ();
-		setPlayer ();
-		GetComponent<ObjectPool> ().Initialize (myTeam);
-		gameObject.GetComponent<UIManager> ().initializeUI ();
-
-        GetComponent<PhotonView>().RPC("NotifyReady", PhotonTargets.OthersBuffered);        
+        //TestConnect();
 	}
+
 
 	public void gameStart()
 	{
-		startSpawn = true;
+        userName = PlayerPrefs.GetString("userName");
+        myHeroName = PlayerPrefs.GetString("heroName");
+        myTeam = (GameManager.team)PlayerPrefs.GetInt("userTeam");
+        
+        GameObject obj = SpawnHero();
+
+        player = obj;
+        obj.GetComponent<HeroController>().heroName = myHeroName;
+        obj.GetComponent<HeroController>().destinationPos = -Vector3.one;
+        
+        GetComponent<ObjectPool>().Initialize(myTeam);
+        gameObject.GetComponent<UIManager>().initializeUI();
+
+        startSpawn = true;
 		StartCoroutine ("SpawnMinion");
 	}
 
+    /*
 	public void setPlayer()
 	{
 		for (int i=0; i < heros.Count; i++) {
@@ -86,6 +113,7 @@ public class GameManager : MonoBehaviour {
 		}
 		return null;
 	}
+    */
 
 	GameObject SpawnHero()
 	{
@@ -98,7 +126,8 @@ public class GameManager : MonoBehaviour {
 			startPos = alphaHome.transform.position;
 			destPos = betaHome.transform.position;
 		}
-		
+
+        Debug.Log(myHeroName + " Spawned!!");
 		Vector3 direction = (destPos - startPos).normalized;
 		
 		GameObject heroObj = PhotonNetwork.Instantiate (myHeroName, 
@@ -106,7 +135,7 @@ public class GameManager : MonoBehaviour {
 		
 		heroObj.GetComponent<HeroController> ().init_hero (myTeam, startPos, destPos);
 		
-		addHeroObj (heroObj);
+		//addHeroObj (heroObj);
 		
 		return heroObj;
 	}

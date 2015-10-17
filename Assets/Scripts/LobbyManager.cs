@@ -67,9 +67,8 @@ public class LobbyManager : MonoBehaviour {
 		PhotonNetwork.JoinRoom(selectedRoomName);
 	}
 
-	public void StartGame() {
-
-		
+	public void StartGame()
+    {
 
         GetComponent<PhotonView>().RPC("RealStartGame", PhotonTargets.All);
 	}
@@ -266,7 +265,9 @@ public class LobbyManager : MonoBehaviour {
         PlayerPrefs.SetString("heroName", heroName);
         PlayerPrefs.SetInt("userTeam", (int)team);
 
-        Application.LoadLevel("scene_main");
+        //Application.LoadLevel("scene_main");
+        //PhotonNetwork.automaticallySyncScene = true;
+        PhotonNetwork.LoadLevel("scene_main");
     }
 
     // Update is called once per frame

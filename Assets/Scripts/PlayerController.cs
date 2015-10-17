@@ -38,6 +38,7 @@ public class PlayerController : MonoBehaviour {
 
 	// Update is called once per frame
 	void FixedUpdate () {
+
 		GameObject player = gameObject.GetComponent<GameManager> ().player;
 		if (player == null)
 			return;

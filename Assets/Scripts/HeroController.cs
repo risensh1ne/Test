@@ -17,6 +17,8 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	public float max_exp_val, curr_exp_val, my_exp_val;
 	public float maxHealth, maxMana;
 
+    public string heroName;
+
 	Vector2 healthBarSize = new Vector2(50, 5);
 
 	public float attackRange = 1.5f;
@@ -52,7 +54,6 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	public void init(object[] param)
 	{
 		attachedTeam = (GameManager.team)param[0];
-		Debug.Log (attachedTeam);
 		startPos = (Vector3)param[1];
 		endPos = (Vector3)param[2];
 	}
@@ -180,7 +181,6 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 	public void init_hero(GameManager.team team, Vector3 startPos, Vector3 destPos)
 	{
-		Debug.Log (team);
 		object[] param = new object[3]{team, startPos, destPos};
 
 		gameObject.GetComponent<PhotonView> ().RPC ("init", PhotonTargets.AllBuffered, param);

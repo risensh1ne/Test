@@ -12,44 +12,19 @@ public class NetworkManager : MonoBehaviour {
 	void Start () {
 
 		gm = gameObject.GetComponent<GameManager> ();
-
-		/*
-		connecting = false;
-
-		PhotonNetwork.player.name = "Gion";
-
-		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
-		PhotonNetwork.JoinRandomRoom();
-		*/
-
-		/*
-		selectedHeroName = "Gion";
-		selectedTeam = GameManager.team.ALPHA;
-
-		GameObject obj = SpawnHero (selectedHeroName, selectedTeam);
-		gm.setPlayer (selectedHeroName);
-		gm.GetComponent<ObjectPool> ().Initialize (selectedTeam);
-		gameObject.GetComponent<UIManager> ().initializeUI ();
-		gm.gameStart ();
-		*/
 	}
 
 	void OnDestroy() {
 		//PlayerPrefs.SetString("username", PhotonNetwork.player.name);
 	}
 
-	/*
+	
 	void Connect(string heroName, GameManager.team team) {
 		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
 
 		selectedHeroName = heroName;
 		selectedTeam = team;
 	}
-
-	void Connect() {
-		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
-	}
-
 
 	void OnJoinedLobby() {
 		Debug.Log ("OnJoinedLobby");
@@ -66,24 +41,17 @@ public class NetworkManager : MonoBehaviour {
 		Debug.Log ("OnJoinedRoom");	
 		connecting = false;
 
-		GameObject obj = SpawnHero (selectedHeroName, selectedTeam);
-		gm.setPlayer (selectedHeroName);
-		gm.GetComponent<ObjectPool> ().Initialize (selectedTeam);
-		gameObject.GetComponent<UIManager> ().initializeUI ();
+        PlayerPrefs.SetString("userName", "seo");
+        PlayerPrefs.SetString("heroName", selectedHeroName);
+        PlayerPrefs.SetInt("userTeam", (int)selectedTeam);
+
 		gm.gameStart ();
 	}
 
 
-	void OnLoginButtonClicked()
-	{
-		connecting = true;
-		Connect ();
-	}
-	*/
-
 	void OnGUI()
 	{
-		/*
+		
 		GUILayout.Label( PhotonNetwork.connectionStateDetailed.ToString() );
 
 		if(PhotonNetwork.connected == false && connecting == false ) {
@@ -116,34 +84,10 @@ public class NetworkManager : MonoBehaviour {
 			GUILayout.EndHorizontal();
 			GUILayout.EndArea();
 		}
-		*/
+		
 
 	}
-	
-	GameObject SpawnHero(string heroName, GameManager.team team)
-	{
-		Vector3 startPos, destPos;
-
-		if (team == GameManager.team.BETA) {
-			startPos = gm.betaHome.transform.position;
-			destPos = gm.alphaHome.transform.position;
-		} else {
-			startPos = gm.alphaHome.transform.position;
-			destPos = gm.betaHome.transform.position;
-		}
-
-		Vector3 direction = (destPos - startPos).normalized;
-
-		GameObject heroObj = PhotonNetwork.Instantiate (heroName, 
-		                    	startPos, Quaternion.LookRotation (direction), 0);
-
-		heroObj.GetComponent<HeroController> ().init_hero (team, startPos, destPos);
-
-		gm.addHeroObj (heroObj);
-
-		return heroObj;
-	}
-	
+		
 	// Update is called once per frame
 	void Update () {
 		if (PhotonNetwork.connected) {

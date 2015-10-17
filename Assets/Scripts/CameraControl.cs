@@ -21,7 +21,7 @@ public class CameraControl : MonoBehaviour {
 	public GameObject gm;
 
 	void Start () {
-		if (gm == null)
+		if (gm == null || gm.GetComponent<GameManager>().player == null)
 			return;
 
 		Vector3 PlayerPOS = gm.GetComponent<GameManager>().player.transform.transform.position;	
@@ -31,7 +31,7 @@ public class CameraControl : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (gm == null)
+		if (gm == null || gm.GetComponent<GameManager>().player == null)
 			return;
 
 		if (Input.touches.Length > 1) {

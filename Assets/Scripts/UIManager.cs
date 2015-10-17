@@ -32,30 +32,53 @@ public class UIManager : MonoBehaviour {
 
 	public Texture2D progressBarBack, progressBarHealth;
 
-	// Use this for initialization
-	void Start () {
+    private GameManager.team myTeam;
+    private string myHeroName;
+    private string userName;
 
-	}
+    private Texture alphaHeroTexture;
+    private Texture betaHeroTexture;
+
+    // Use this for initialization
+    void Start () {
+        
+    }
 
 	public void initializeUI()
-	{
-		player = gameObject.GetComponent<GameManager> ().player;
-		if (player == null) {
-			Debug.Log ("Can't find Player object");
-			return;
-		}
+    {
+        player = gameObject.GetComponent<GameManager>().player;
+        if (player == null)
+        {
+            //Debug.Log("Can't find Player object");
+            return;
+        }
 
-		if (player.name == "Gion(Clone)") { 
+        userName = PlayerPrefs.GetString("userName");
+        myHeroName = PlayerPrefs.GetString("heroName");
+        myTeam = (GameManager.team)PlayerPrefs.GetInt("userTeam");
+
+        int heroTextureIdx = 0;
+
+		if (myHeroName == "Gion") { 
 			skill1_btn.GetComponent<Image> ().sprite = skillIcons [0];
 			skill2_btn.GetComponent<Image> ().sprite = skillIcons [1];
 			skill3_btn.GetComponent<Image> ().sprite = skillIcons [2];
-		} else if (player.name == "SwordMaster(Clone)") { 
+
+            heroTextureIdx = 0;
+            
+        } else if (myHeroName == "SwordMaster") { 
 			skill1_btn.GetComponent<Image> ().sprite = skillIcons [2];
 			skill2_btn.GetComponent<Image> ().sprite = skillIcons [1];
 			skill3_btn.GetComponent<Image> ().sprite = skillIcons [0];
-		}
 
-	}
+            heroTextureIdx = 1;
+        }
+
+        if (myTeam == GameManager.team.ALPHA)
+            alphaHeroTexture = heroIcons[heroTextureIdx].texture;
+        else
+            betaHeroTexture = heroIcons[heroTextureIdx].texture;
+    }
 	
 	public void OnSkill1BtnClicked()
 	{
@@ -84,25 +107,64 @@ public class UIManager : MonoBehaviour {
 
 	void OnGUI()
 	{
-		if (player == null) 
-			return;
+        //for DEBUG 
+        {
+            string txt = "";
+            System.Collections.Generic.HashSet<GameObject> playersInGame = PhotonNetwork.FindGameObjectsWithComponent(typeof(HeroController));
+            foreach (GameObject networkplayer in playersInGame)
+            {
+                txt += networkplayer.GetComponent<HeroController>().heroName;
+            }
 
-		Texture t1 = heroIcons [0].texture;
+            txt = playersInGame.
 
-		GUI.DrawTexture (new Rect (20, 50, 50, 50), t1);
-		if (player.GetComponent<IPlayer> ().isDead) {
-			GUIStyle stl = new GUIStyle();
-			stl.fontSize = 8;
-			stl.fontStyle = FontStyle.Bold;
+            GUIStyle stl = new GUIStyle();
+            stl.fontSize = 15;
+            stl.fontStyle = FontStyle.Bold;
+            GUI.Label(new Rect(300, 100, 200, 50), txt, stl);
+        }
 
-			GUI.Label (new Rect(25, 70, 100, 20), "Respawning", stl);
-		}
-		GUI.DrawTexture (new Rect (20, 100, 50, 10), progressBarBack);
-		GUI.DrawTexture (new Rect (20, 100, 50 * (player.GetComponent<HeroController>().health / 100), 10), progressBarHealth);
+        if (player == null)
+            return;
 
-		Texture t2 = heroIcons [1].texture;
-		GUI.DrawTexture (new Rect (Screen.width - 70, 50, 50, 50), t2);
-		GameObject hero = gameObject.GetComponent<GameManager> ().getHeroObj ("SwordMaster");
+        GUIStyle gStyle = new GUIStyle();
+        gStyle.fontSize = 8;
+        gStyle.fontStyle = FontStyle.Bold;
+
+        if (myTeam == GameManager.team.ALPHA)
+        {
+            GUI.DrawTexture(new Rect(20, 80, 60, 60), alphaHeroTexture);
+            GUI.DrawTexture(new Rect(20, 140, 50, 10), progressBarBack);
+            GUI.DrawTexture(new Rect(20, 140, 50 * (player.GetComponent<HeroController>().health / 100), 10), progressBarHealth);
+        } 
+        else
+        {
+            GUI.DrawTexture(new Rect(Screen.width - 70, 80, 60, 60), betaHeroTexture);
+            GUI.DrawTexture(new Rect(Screen.width - 70, 140, 50, 10), progressBarBack);
+            GUI.DrawTexture(new Rect(Screen.width - 70, 140, 50 * (player.GetComponent<HeroController>().health / 100), 10), progressBarHealth);
+        }
+            
+        if (player.GetComponent<IPlayer> ().isDead) {
+            if (myTeam == GameManager.team.ALPHA)
+                GUI.Label (new Rect(25, 100, 100, 20), "Respawning", gStyle);
+            else
+                GUI.Label(new Rect(Screen.width - 65, 70, 100, 20), "Respawning", gStyle);
+        }
+		
+
+        /*
+		GUI.DrawTexture (new Rect (Screen.width - 70, 80, 60, 60), betaHeroTexture);
+        if (player.GetComponent<IPlayer>().isDead)
+        {
+            GUIStyle stl = new GUIStyle();
+            stl.fontSize = 8;
+            stl.fontStyle = FontStyle.Bold;
+
+            GUI.Label(new Rect(25, 100, 100, 20), "Respawning", stl);
+        }
+        
+
+        GameObject hero = gameObject.GetComponent<GameManager> ().getHeroObj ("SwordMaster");
 		if (hero != null) {
 			if (hero.GetComponent<IPlayer> ().isDead) {
 				GUIStyle stl = new GUIStyle ();
@@ -114,6 +176,7 @@ public class UIManager : MonoBehaviour {
 			GUI.DrawTexture (new Rect (Screen.width - 70, 100, 50, 10), progressBarBack);
 			GUI.DrawTexture (new Rect (Screen.width - 70, 100, 50 * (hero.GetComponent<HeroController> ().health / 100), 10), progressBarHealth);
 		}
+        */
 	}
 
 
@@ -121,7 +184,7 @@ public class UIManager : MonoBehaviour {
 	void Update () {
 		player = gameObject.GetComponent<GameManager> ().player;
 		if (player == null) {
-			Debug.Log ("Can't find Player object");
+			//Debug.Log ("Can't find Player object");
 			return;
 		}
 
