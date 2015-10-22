@@ -50,6 +50,8 @@ public class GameManager : MonoBehaviour {
     }
     */
 
+
+
 	// Use this for initialization
 	void Start () {
 
@@ -62,6 +64,8 @@ public class GameManager : MonoBehaviour {
 
 	public void gameStart()
 	{
+        Debug.Log("game start");
+
         userName = PlayerPrefs.GetString("userName");
         myHeroName = PlayerPrefs.GetString("heroName");
         myTeam = (GameManager.team)PlayerPrefs.GetInt("userTeam");
@@ -73,7 +77,7 @@ public class GameManager : MonoBehaviour {
         obj.GetComponent<HeroController>().destinationPos = -Vector3.one;
         
         GetComponent<ObjectPool>().Initialize(myTeam);
-        gameObject.GetComponent<UIManager>().initializeUI();
+        GameObject.Find("UI").GetComponent<UIManager>().initializeUI();
 
         startSpawn = true;
 		StartCoroutine ("SpawnMinion");
@@ -129,9 +133,13 @@ public class GameManager : MonoBehaviour {
 
         Debug.Log(myHeroName + " Spawned!!");
 		Vector3 direction = (destPos - startPos).normalized;
-		
+
+        object[] data = new object[2];
+        data[0] = (string)myHeroName;
+        data[1] = myTeam;
+
 		GameObject heroObj = PhotonNetwork.Instantiate (myHeroName, 
-		                                                startPos, Quaternion.LookRotation (direction), 0);
+		                                                startPos, Quaternion.LookRotation (direction), 0, data);
 		
 		heroObj.GetComponent<HeroController> ().init_hero (myTeam, startPos, destPos);
 		

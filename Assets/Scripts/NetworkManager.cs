@@ -5,17 +5,14 @@ public class NetworkManager : MonoBehaviour {
 
 	bool connecting;
 
-	public GameManager gm;
+	public GameObject gm;
 	public string selectedHeroName;
 	public GameManager.team selectedTeam;
 
 	void Start () {
-
-		gm = gameObject.GetComponent<GameManager> ();
 	}
 
 	void OnDestroy() {
-		//PlayerPrefs.SetString("username", PhotonNetwork.player.name);
 	}
 
 	
@@ -45,13 +42,12 @@ public class NetworkManager : MonoBehaviour {
         PlayerPrefs.SetString("heroName", selectedHeroName);
         PlayerPrefs.SetInt("userTeam", (int)selectedTeam);
 
-		gm.gameStart ();
+        gameObject.GetComponent<GameManager>().gameStart();
 	}
 
 
 	void OnGUI()
-	{
-		
+    { 
 		GUILayout.Label( PhotonNetwork.connectionStateDetailed.ToString() );
 
 		if(PhotonNetwork.connected == false && connecting == false ) {
