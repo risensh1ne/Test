@@ -40,6 +40,10 @@ public class UIManager : MonoBehaviour {
     private Texture myteamHeroTexture;
     private Texture enemyteamHeroTexture;
 
+    private int originalWidth = 1024;
+    private int originalHeight = 600;
+    private Vector3 guiScale;
+
     // Use this for initialization
     void Start () {
         //gm = transform.Find("_GM").gameObject;
@@ -112,6 +116,14 @@ public class UIManager : MonoBehaviour {
 
 	void OnGUI()
 	{
+        guiScale.x = Screen.width / originalWidth; // calculate hor scale
+        guiScale.y = Screen.height / originalHeight; // calculate vert scale
+        guiScale.z = 1;
+
+        Matrix4x4 saveMat = GUI.matrix;
+
+        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);
+
         //for DEBUG 
         {
             string txt = "";
@@ -167,7 +179,8 @@ public class UIManager : MonoBehaviour {
                 GUI.Label(new Rect(Screen.width - 65, 70, 100, 20), "Respawning", gStyle);
             }
         }
-        
+
+        GUI.matrix = saveMat;
         
 	}
 

@@ -9,7 +9,11 @@ public class NetworkManager : MonoBehaviour {
 	public string selectedHeroName;
 	public GameManager.team selectedTeam;
 
-	void Start () {
+    private int originalWidth = 1024;
+    private int originalHeight = 600;
+    private Vector3 guiScale;
+
+    void Start () {
 	}
 
 	void OnDestroy() {
@@ -47,12 +51,20 @@ public class NetworkManager : MonoBehaviour {
 
 
 	void OnGUI()
-    { 
-		GUILayout.Label( PhotonNetwork.connectionStateDetailed.ToString() );
-
+    {
 		if(PhotonNetwork.connected == false && connecting == false ) {
-			// We have not yet connected, so ask the player for online vs offline mode.
-			GUILayout.BeginArea( new Rect(0, 0, Screen.width, Screen.height) );
+            guiScale.x = Screen.width / originalWidth; // calculate hor scale
+            guiScale.y = Screen.height / originalHeight; // calculate vert scale
+            guiScale.z = 1;
+
+            Matrix4x4 saveMat = GUI.matrix;
+
+            GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);
+
+            GUILayout.Label(PhotonNetwork.connectionStateDetailed.ToString());
+
+            // We have not yet connected, so ask the player for online vs offline mode.
+            GUILayout.BeginArea( new Rect(0, 0, originalWidth, originalHeight) );
 			GUILayout.BeginHorizontal();
 			GUILayout.FlexibleSpace();
 			GUILayout.BeginVertical();
@@ -79,7 +91,9 @@ public class NetworkManager : MonoBehaviour {
 			GUILayout.FlexibleSpace();
 			GUILayout.EndHorizontal();
 			GUILayout.EndArea();
-		}
+
+            GUI.matrix = saveMat;
+        }
 		
 
 	}

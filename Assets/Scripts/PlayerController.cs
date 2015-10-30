@@ -23,8 +23,12 @@ public class PlayerController : MonoBehaviour {
 
 	public float regenTimer;
 
-	// Use this for initialization
-	void Start () {
+    private int originalWidth = 1024;
+    private int originalHeight = 600;
+    private Vector3 guiScale;
+
+    // Use this for initialization
+    void Start () {
 		healthbar_cachedY = healthBarTransform.position.y;
 		healthbar_maxXValue = healthBarTransform.position.x;
 		healthbar_minXValue = healthBarTransform.position.x - healthBarTransform.rect.width;
@@ -60,7 +64,14 @@ public class PlayerController : MonoBehaviour {
 		GameObject player = gameObject.GetComponent<GameManager> ().player;
 		if (player == null)
 			return;
-		healthbar_maxHealth = player.GetComponent<HeroController> ().maxHealth;
+
+        guiScale.x = Screen.width / originalWidth; // calculate hor scale
+        guiScale.y = Screen.height / originalHeight; // calculate vert scale
+        guiScale.z = 1;
+
+        Matrix4x4 saveMat = GUI.matrix;
+
+        healthbar_maxHealth = player.GetComponent<HeroController> ().maxHealth;
 	
 		float currentHealth = player.GetComponent<HeroController> ().health;
 		float currentXValue = MapValues (currentHealth, 0, healthbar_maxHealth, healthbar_minXValue, healthbar_maxXValue);
@@ -73,7 +84,9 @@ public class PlayerController : MonoBehaviour {
 		} else {
 			visualHealth.color = new Color32(255, (byte)MapValues(currentHealth, 0, healthbar_maxHealth/2, 0, 255),0, 255);
 		}
-	}
+
+        GUI.matrix = saveMat;
+    }
 
 	public void updateManaBar()
 	{

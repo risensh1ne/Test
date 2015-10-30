@@ -211,15 +211,26 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 		changeStateTo (CharacterState.STATE_DEAD);
 
-		if (lastAttackedBy && lastAttackedBy.tag == "Player") {
+        if (lastAttackedBy && lastAttackedBy.tag == "Player") {
 			lastAttackedBy.GetComponent<HeroController>().GainExp(my_exp_val);
-		}
+
+            GameObject coinObj = ObjectPool.instance.GetObjectForType("coin", true);
+            if (coinObj != null)
+            {
+                coinObj.transform.parent = gameObject.transform;
+                coinObj.transform.rotation = Quaternion.identity;
+                coinObj.transform.localPosition = new Vector3(0, 1, 0);
+            }
+            yield return new WaitForSeconds(0.5f);
+            ObjectPool.instance.PoolObject(coinObj);
+        }
 
 		yield return new WaitForSeconds (5.0f);
 		PhotonView.DestroyObject (gameObject);
 	}
 
-	void OnParticleCollision(GameObject other)
+
+    void OnParticleCollision(GameObject other)
 	{
 		if (other.name == "Fireball") {
 			damage (40.0f);

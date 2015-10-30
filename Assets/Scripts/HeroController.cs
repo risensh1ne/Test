@@ -50,7 +50,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	
 	Animator anim;
 
-	[PunRPC]
+    [PunRPC]
 	public void init(object[] param)
 	{
 		attachedTeam = (GameManager.team)param[0];
@@ -381,8 +381,8 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		max_exp_val = 500.0f;
 		level = 1;
 
-		InitState ();
-	}
+		InitState ();        
+    }
 
 	public GameObject getNearestAttackTarget()
 	{
@@ -465,12 +465,12 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	{
 		if (anim == null)
 			return;
-				
-		if (photonView.isMine) {
+
+        if (photonView.isMine) {
 			if (isDead)
 				return;
 
-			if (skill1start || skill2start || skill3start)
+            if (skill1start || skill2start || skill3start)
 				return;
 
 			if (Input.GetMouseButtonDown (0)) {

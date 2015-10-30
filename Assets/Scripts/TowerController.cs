@@ -56,9 +56,14 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
 		else
 			health -= d;
 		
-		if (health <= 0) 
-			Destroy (gameObject);
+		if (health <= 0)
+        {
+            Destroy(gameObject);
+        }
+			
 	}
+
+   
 
 	// Use this for initialization
 	void Start () {
