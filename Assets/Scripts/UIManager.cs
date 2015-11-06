@@ -47,7 +47,9 @@ public class UIManager : MonoBehaviour {
     // Use this for initialization
     void Start () {
         //gm = transform.Find("_GM").gameObject;
-        
+        guiScale.x = (float)Screen.width / (float)originalWidth; // calculate hor scale
+        guiScale.y = (float)Screen.height / (float)originalHeight; // calculate vert scale
+        guiScale.z = 1.0f;
     }
 
 	public void initializeUI()
@@ -116,10 +118,6 @@ public class UIManager : MonoBehaviour {
 
 	void OnGUI()
 	{
-        guiScale.x = Screen.width / originalWidth; // calculate hor scale
-        guiScale.y = Screen.height / originalHeight; // calculate vert scale
-        guiScale.z = 1;
-
         Matrix4x4 saveMat = GUI.matrix;
 
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
 
+    public GameObject UI;
+
 	public float spawnPeriod = 2.0f;
 	float nextSpawnRemaining;
 	bool startSpawn;

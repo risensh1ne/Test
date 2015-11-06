@@ -248,7 +248,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		if (health <= 0) 
 			health = 0;
 
-		gm.GetComponent<PlayerController> ().updateHealthBar ();
+		gm.GetComponent<PlayerController> ().updateHealthBar (gameObject);
 
 		if (health == 0) {
 			StartCoroutine("Die");
@@ -264,7 +264,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 		if (mana < 0)
 			mana = 0;
-		gm.GetComponent<PlayerController> ().updateManaBar ();
+		gm.GetComponent<PlayerController> ().updateManaBar (gameObject);
 	}
 
 	public void regenHealthMana()
@@ -301,7 +301,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		if (curr_exp_val >= max_exp_val)
 			LevelUp ();
 
-		gm.GetComponent<PlayerController> ().updateLevelText ();
+		gm.GetComponent<PlayerController> ().updateLevelText (gameObject);
 		
 	}
 
@@ -333,9 +333,9 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		updateMaxStats ();
 		ResetStats ();
 
-		gm.GetComponent<PlayerController> ().updateHealthBar ();
-		gm.GetComponent<PlayerController> ().updateManaBar ();
-		gm.GetComponent<PlayerController> ().updateLevelText ();
+		gm.GetComponent<PlayerController> ().updateHealthBar (gameObject);
+		gm.GetComponent<PlayerController> ().updateManaBar (gameObject);
+		gm.GetComponent<PlayerController> ().updateLevelText (gameObject);
 	}
 
 	void updateMaxStats()
@@ -363,9 +363,9 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		ResetStats ();
 
 		if (photonView.isMine) {
-			gm.GetComponent<PlayerController> ().updateHealthBar ();
-			gm.GetComponent<PlayerController> ().updateManaBar ();
-			gm.GetComponent<PlayerController> ().updateLevelText ();
+			gm.GetComponent<PlayerController> ().updateHealthBar (gameObject);
+			gm.GetComponent<PlayerController> ().updateManaBar (gameObject);
+			gm.GetComponent<PlayerController> ().updateLevelText (gameObject);
 		}
 	}
 

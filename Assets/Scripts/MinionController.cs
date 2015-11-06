@@ -4,7 +4,7 @@ using System.Collections;
 public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 	public GameObject gm;
-
+    
 	public enum CharacterState {STATE_MOVING, STATE_ATTACKING, STATE_DEAD};
 	public CharacterState curr_state;
 
@@ -23,7 +23,10 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 	public Quaternion realRotation = Quaternion.identity;
 	private bool gotFirstUpdate;
 
-	private float my_exp_val = 100.0f;
+    private int originalWidth = 1024;
+    private int originalHeight = 600;
+
+    private float my_exp_val = 100.0f;
 	
 	GameObject targetEnemy;
 
@@ -73,8 +76,7 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 	// Use this for initialization
 	void Start () {
-
-	}
+    }
 
 	public void initState(GameManager.team team) {
 
@@ -200,6 +202,7 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 		}
 	}
 
+
 	IEnumerator Die()
 	{
 		if (anim == null) 
@@ -211,8 +214,8 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 		changeStateTo (CharacterState.STATE_DEAD);
 
-        if (lastAttackedBy && lastAttackedBy.tag == "Player") {
-			lastAttackedBy.GetComponent<HeroController>().GainExp(my_exp_val);
+        //if (lastAttackedBy && lastAttackedBy.tag == "Player") {
+		//	lastAttackedBy.GetComponent<HeroController>().GainExp(my_exp_val);
 
             GameObject coinObj = ObjectPool.instance.GetObjectForType("coin", true);
             if (coinObj != null)
@@ -221,9 +224,27 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
                 coinObj.transform.rotation = Quaternion.identity;
                 coinObj.transform.localPosition = new Vector3(0, 1, 0);
             }
+
+            GameObject statObj = ObjectPool.instance.GetObjectForType("FloatingDigit", true);
+            if (statObj != null)
+            {
+                statObj.transform.parent = gm.GetComponent<GameManager>().UI.transform;
+                statObj.GetComponent<GUIText>().text = "+10";
+
+                Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
+                
+                pos.x = Mathf.Clamp((pos.x - 10) / Screen.width, 0.05f, 0.95f);
+                pos.y = Mathf.Clamp((pos.y + 10) / Screen.height, 0.05f, 0.9f);
+                pos.z = 1;
+                statObj.GetComponent<RectTransform>().position = pos;
+            }
+        
             yield return new WaitForSeconds(0.5f);
             ObjectPool.instance.PoolObject(coinObj);
-        }
+
+            yield return new WaitForSeconds(0.5f);
+            ObjectPool.instance.PoolObject(statObj);
+        //}
 
 		yield return new WaitForSeconds (5.0f);
 		PhotonView.DestroyObject (gameObject);

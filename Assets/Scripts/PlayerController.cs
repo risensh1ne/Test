@@ -38,7 +38,11 @@ public class PlayerController : MonoBehaviour {
 		manabar_minXValue = manaBarTransform.position.x - manaBarTransform.rect.width;
 
 		regenTimer = 1.0f;
-	}
+
+        guiScale.x = (float)Screen.width / (float)originalWidth; // calculate hor scale
+        guiScale.y = (float)Screen.height / (float)originalHeight; // calculate vert scale
+        guiScale.z = 1.0f;
+    }
 
 	// Update is called once per frame
 	void FixedUpdate () {
@@ -53,24 +57,12 @@ public class PlayerController : MonoBehaviour {
 		regenTimer -= Time.fixedDeltaTime;
 		if (regenTimer <= 0) {
 			player.GetComponent<HeroController>().regenHealthMana();
-			updateHealthBar();
-			updateManaBar();
 			regenTimer = 1.0f;
 		}
 	}
 
-	public void updateHealthBar()
+	public void updateHealthBar(GameObject player)
 	{
-		GameObject player = gameObject.GetComponent<GameManager> ().player;
-		if (player == null)
-			return;
-
-        guiScale.x = Screen.width / originalWidth; // calculate hor scale
-        guiScale.y = Screen.height / originalHeight; // calculate vert scale
-        guiScale.z = 1;
-
-        Matrix4x4 saveMat = GUI.matrix;
-
         healthbar_maxHealth = player.GetComponent<HeroController> ().maxHealth;
 	
 		float currentHealth = player.GetComponent<HeroController> ().health;
@@ -84,33 +76,41 @@ public class PlayerController : MonoBehaviour {
 		} else {
 			visualHealth.color = new Color32(255, (byte)MapValues(currentHealth, 0, healthbar_maxHealth/2, 0, 255),0, 255);
 		}
-
-        GUI.matrix = saveMat;
     }
 
-	public void updateManaBar()
+	public void updateManaBar(GameObject player)
 	{
-		GameObject player = gameObject.GetComponent<GameManager> ().player;
-		if (player == null)
-			return;
-		manabar_maxMana = player.GetComponent<HeroController> ().maxMana;
+        manabar_maxMana = player.GetComponent<HeroController> ().maxMana;
 
 		float currentMana = player.GetComponent<HeroController> ().mana;
 		float currentXValue = MapValues (currentMana, 0, manabar_maxMana, manabar_minXValue, manabar_maxXValue);
 
 		manaText.text = (int)currentMana + "/" + manabar_maxMana;
 		manaBarTransform.position = new Vector3 (currentXValue, manabar_cachedY);
-	}
+    }
 
-	public void updateLevelText()
+	public void updateLevelText(GameObject player)
 	{
-		GameObject player = gameObject.GetComponent<GameManager> ().player;
-		if (player == null)
-			return;
-
-		levelText.text = player.GetComponent<HeroController> ().level + " " + player.GetComponent<HeroController> ().curr_exp_val + "/" 
+        levelText.text = player.GetComponent<HeroController> ().level + " " + player.GetComponent<HeroController> ().curr_exp_val + "/" 
 			+ player.GetComponent<HeroController> ().max_exp_val;
-	}
+  
+    }
+
+    void OnGUI()
+    {
+        GameObject player = gameObject.GetComponent<GameManager>().player;
+        if (player == null)
+            return;
+
+        Matrix4x4 saveMat = GUI.matrix;
+        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);
+
+        updateHealthBar(player);
+        updateManaBar(player);
+        updateLevelText(player);
+
+        GUI.matrix = saveMat;
+    }
 
 	private float MapValues(float x, float inMin, float inMax, float outMin, float outMax)
 	{

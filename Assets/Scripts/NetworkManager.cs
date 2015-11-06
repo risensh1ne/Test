@@ -14,7 +14,10 @@ public class NetworkManager : MonoBehaviour {
     private Vector3 guiScale;
 
     void Start () {
-	}
+        guiScale.x = (float)Screen.width / (float)originalWidth; // calculate hor scale
+        guiScale.y = (float)Screen.height / (float)originalHeight; // calculate vert scale
+        guiScale.z = 1.0f;
+    }
 
 	void OnDestroy() {
 	}
@@ -53,10 +56,7 @@ public class NetworkManager : MonoBehaviour {
 	void OnGUI()
     {
 		if(PhotonNetwork.connected == false && connecting == false ) {
-            guiScale.x = Screen.width / originalWidth; // calculate hor scale
-            guiScale.y = Screen.height / originalHeight; // calculate vert scale
-            guiScale.z = 1;
-
+           
             Matrix4x4 saveMat = GUI.matrix;
 
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);
