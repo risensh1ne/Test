@@ -24,11 +24,13 @@ public class NetworkManager : MonoBehaviour {
 
 	
 	void Connect(string heroName, GameManager.team team) {
-		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
+
+        PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
 
 		selectedHeroName = heroName;
 		selectedTeam = team;
-	}
+        
+    }
 
 	void OnJoinedLobby() {
 		Debug.Log ("OnJoinedLobby");

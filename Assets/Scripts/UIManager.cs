@@ -54,7 +54,6 @@ public class UIManager : MonoBehaviour {
 
 	public void initializeUI()
     {
-        
         player = gm.GetComponent<GameManager>().player;
         if (player == null)
         {
@@ -87,12 +86,16 @@ public class UIManager : MonoBehaviour {
             idx = 1;
 
         return idx;
-
     }
 
 
 	public void OnSkill1BtnClicked()
 	{
+        if (player == null)
+        {
+            Debug.Log("Can't find Player object");
+            return;
+        }
 		player.GetComponent<PhotonView> ().RPC ("OnSkill1", PhotonTargets.All);
 		skill1CooldownCurrent = skill1Cooldown;
 		skill1_btn.GetComponent<Button> ().interactable = false;
@@ -118,11 +121,15 @@ public class UIManager : MonoBehaviour {
 
 	void OnGUI()
 	{
+        if (player == null)
+            return;
+
         Matrix4x4 saveMat = GUI.matrix;
 
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);
 
         //for DEBUG 
+        /*
         {
             string txt = "";
             GameObject[] _playersInGame = GameObject.FindGameObjectsWithTag("Player");
@@ -137,10 +144,8 @@ public class UIManager : MonoBehaviour {
             stl.fontStyle = FontStyle.Bold;
             GUI.Label(new Rect(300, 100, 200, 50), _playersInGame.Length + "," + txt, stl);
         }
-
-        if (player == null)
-            return;
-
+        */
+        
         GameObject[] playersInGame = GameObject.FindGameObjectsWithTag("Player");
         foreach (GameObject networkplayer in playersInGame)
         {
@@ -179,18 +184,19 @@ public class UIManager : MonoBehaviour {
         }
 
         GUI.matrix = saveMat;
-        
 	}
 
 
 	// Update is called once per frame
 	void Update () {
-		player = gm.GetComponent<GameManager> ().player;
+		//player = gm.GetComponent<GameManager> ().player;
 		if (player == null) {
 			//Debug.Log ("Can't find Player object");
 			return;
 		}
 
+
+        
 		if (player.GetComponent<HeroController>().targetEnemy == null)
 			skill1_btn.GetComponent<Button> ().interactable = false;
 

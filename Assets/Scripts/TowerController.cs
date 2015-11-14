@@ -3,7 +3,8 @@ using System.Collections;
 
 public class TowerController : Photon.MonoBehaviour, IPlayer {
 
-	public float health = 100.0f;
+    public float maxHealth;
+	public float health;
 	public float attackRange = 8.0f;
 	public float attackRate = 3.0f;
 	public bool bAttacking = false;
@@ -24,8 +25,12 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
     private float alphaOfDistruction = 1.0f;
 
     Vector2 healthBarSize = new Vector2(50, 5);
-	
-	public Texture2D progressBarBack;
+
+    private int originalWidth = 1024;
+    private int originalHeight = 600;
+    private Vector3 guiScale;
+
+    public Texture2D progressBarBack;
 	public Texture2D progressBarHealth;
 
 	public GameManager.team checkTeam() {
@@ -55,7 +60,13 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
 		lastAttackedBy = attacker;
 	}
 
-	public void damage(float d)
+    [PunRPC]
+    void DamageSync(float d)
+    {
+        damage(d);
+    }
+
+    public void damage(float d)
 	{
 		if (isDead)
 			return;
@@ -64,7 +75,7 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
 			health = 0;
 		else
 			health -= d;
-		
+
 		if (health <= 0)
         {
             DestructTower();
@@ -88,21 +99,37 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
 
 	// Use this for initialization
 	void Start () {
-		firePoint = transform.Find ("TowerFirePoint");   
+		firePoint = transform.Find ("TowerFirePoint");
+
+        guiScale.x = (float)Screen.width / (float)originalWidth; // calculate hor scale
+        guiScale.y = (float)Screen.height / (float)originalHeight; // calculate vert scale
+        guiScale.z = 1.0f;
+
+        maxHealth = 200.0f;
+        health = maxHealth;
     }
 
 	void OnGUI()
 	{
-		Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
-		
-		GUI.BeginGroup (new Rect(pos.x - 30, Screen.height - pos.y - 90, healthBarSize.x, healthBarSize.y));
-		GUI.DrawTexture (new Rect (0, 0, healthBarSize.x, healthBarSize.y), progressBarBack);
-		
+        Matrix4x4 saveMat = GUI.matrix;
+
+        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);
+
+        Vector3 worldPos = transform.position;
+        worldPos.y += 5;
+
+        Vector3 pos = Camera.main.WorldToScreenPoint(worldPos);
+
+        GUI.BeginGroup (new Rect(pos.x - 30, Screen.height - pos.y, healthBarSize.x, healthBarSize.y));
+        GUI.DrawTexture (new Rect (0, 0, healthBarSize.x, healthBarSize.y), progressBarBack);
+
 		GUI.BeginGroup (new Rect(0, 0, healthBarSize.x * (health / 100), healthBarSize.y));
 		GUI.DrawTexture (new Rect (0, 0, healthBarSize.x * (health / 100), healthBarSize.y), progressBarHealth);
 		GUI.EndGroup();
-		GUI.EndGroup ();	
-	}
+		GUI.EndGroup ();
+
+        GUI.matrix = saveMat;
+    }
 
 	// Update is called once per frame
 	void Update () {
@@ -183,6 +210,7 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
 	IEnumerator Fire(Vector3 targetPos) {
 		GameObject fireballObj = ObjectPool.instance.GetObjectForType ("Fireball", true);
 		if (fireballObj != null) {
+			fireballObj.GetComponent<FireballData>().team = attachedTeam;
 			Vector3 dir = (targetPos - firePoint.transform.position).normalized;
 			fireballObj.transform.position = firePoint.position;
 			fireballObj.transform.rotation = Quaternion.LookRotation (dir);

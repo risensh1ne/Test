@@ -81,7 +81,7 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 	public void initState(GameManager.team team) {
 
 		if (gm == null)
-			gm = GameObject.Find ("_GM");
+			gm = GameObject.Find ("_GM").gameObject;
 
 		attachedTeam = team;
 
@@ -205,8 +205,8 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 	IEnumerator Die()
 	{
-		if (anim == null) 
-			anim = GetComponent<Animator> ();
+		//if (anim == null) 
+		//	anim = GetComponent<Animator> ();
 
 		isDead = true;
 		isMoving = false;
@@ -214,8 +214,8 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 		changeStateTo (CharacterState.STATE_DEAD);
 
-        //if (lastAttackedBy && lastAttackedBy.tag == "Player") {
-		//	lastAttackedBy.GetComponent<HeroController>().GainExp(my_exp_val);
+        if (lastAttackedBy && lastAttackedBy.tag == "Player") {
+			lastAttackedBy.GetComponent<HeroController>().GainExp(my_exp_val);
 
             GameObject coinObj = ObjectPool.instance.GetObjectForType("coin", true);
             if (coinObj != null)
@@ -240,21 +240,24 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
             }
         
             yield return new WaitForSeconds(0.5f);
-            ObjectPool.instance.PoolObject(coinObj);
+            ObjectPool.instance.PoolObject(coinObj);   
 
-            yield return new WaitForSeconds(0.5f);
-            ObjectPool.instance.PoolObject(statObj);
-        //}
+			yield return new WaitForSeconds(0.5f);
+			ObjectPool.instance.PoolObject(statObj);
+        }
 
-		yield return new WaitForSeconds (5.0f);
-		PhotonView.DestroyObject (gameObject);
+		yield return new WaitForSeconds (3.0f);
+		//PhotonView.DestroyObject (gameObject);
+		PhotonNetwork.RemoveRPCs(GetComponent<PhotonView>());
+		PhotonNetwork.Destroy(gameObject);
 	}
 
 
     void OnParticleCollision(GameObject other)
 	{
 		if (other.name == "Fireball") {
-			damage (40.0f);
+            if (other.GetComponent<FireballData>().team != attachedTeam)
+			    damage (40.0f);
 		} else if (other.name == "Explosion") {
 			damage (30.0f);
 		}

@@ -124,7 +124,7 @@ public class ObjectPool : MonoBehaviour
 			if(objectPrefabs[i].name == obj.name)
 			{
 				obj.SetActiveRecursively(false);
-				obj.transform.parent = containerObject.transform;
+				obj.transform.SetParent(containerObject.transform);
 				pooledObjects[i].Add(obj);
 				return;
 			}

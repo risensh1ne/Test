@@ -23,7 +23,7 @@ Loading C:\Users\Naver.AD010\Documents\Unity Projects\Test\test_Data\Managed\Pho
 Platform assembly: C:\Users\Naver.AD010\Documents\Unity Projects\Test\test_Data\Managed\CoherentNoise.dll (this message is harmless)
 Loading C:\Users\Naver.AD010\Documents\Unity Projects\Test\test_Data\Managed\CoherentNoise.dll into Unity Child Domain
 Platform assembly: C:\Users\Naver.AD010\Documents\Unity Projects\Test\test_Data\Managed\System.Core.dll (this message is harmless)
-- Completed reload, in  0.114 seconds
+- Completed reload, in  0.095 seconds
 desktop: 1920x1200 60Hz; virtual: 3840x1200 at 0,0
 <RI> Initializing input.
 XInput1_3.dll not found. Trying XInput9_1_0.dll instead...
@@ -31,8 +31,8 @@ XInput1_3.dll not found. Trying XInput9_1_0.dll instead...
 <RI> Initialized touch support.
 Platform assembly: C:\Users\Naver.AD010\Documents\Unity Projects\Test\test_Data\Managed\System.dll (this message is harmless)
 Setting up 2 worker threads for Enlighten.
-  Thread -> id: 2b8c -> priority: 1 
-  Thread -> id: 1d98 -> priority: 1 
+  Thread -> id: 2778 -> priority: 1 
+  Thread -> id: 253c -> priority: 1 
 OnJoinedLobby
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
@@ -53,23 +53,94 @@ Gion Spawned!!
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
 
-Received OnSerialization for view ID 2004. We have no such PhotonView! Ignored this if you're leaving a room. State: Joined
+Failed to 'network-remove' GameObject. Client is neither owner nor masterClient taking over for owner who left: View (0)2002 on minion_alpha(Clone) 
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
 
-Received OnSerialization for view ID 2010. We have no such PhotonView! Ignored this if you're leaving a room. State: Joined
+Parent of RectTransform is being set with parent property. Consider using the SetParent method instead, with the worldPositionStays argument set to false. This will retain local orientation and scale rather than world orientation and scale, which can prevent common UI scaling issues.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
 
-Received OnSerialization for view ID 2010. We have no such PhotonView! Ignored this if you're leaving a room. State: Joined
+NullReferenceException: Object reference not set to an instance of an object
+  at MinionController+<Die>c__Iterator12.MoveNext () [0x00000] in <filename unknown>:0 
+UnityEngine.MonoBehaviour:StartCoroutine(String, Object)
+UnityEngine.MonoBehaviour:StartCoroutine(String)
+MinionController:damage(Single)
+MinionController:DamageSync(Single)
+System.Reflection.MonoMethod:InternalInvoke(Object, Object[], Exception&)
+System.Reflection.MonoMethod:Invoke(Object, BindingFlags, Binder, Object[], CultureInfo)
+System.Reflection.MethodBase:Invoke(Object, Object[])
+NetworkingPeer:ExecuteRpc(Hashtable, PhotonPlayer)
+NetworkingPeer:RPC(PhotonView, String, PhotonTargets, Boolean, Object[])
+PhotonNetwork:RPC(PhotonView, String, PhotonTargets, Boolean, Object[])
+PhotonView:RpcSecure(String, PhotonTargets, Boolean, Object[])
+PhotonView:RPC(String, PhotonTargets, Object[])
+HeroController:DamageEnemy(Single)
+HeroController:OnNormalAttack()
+ 
+(Filename:  Line: -1)
+
+Parent of RectTransform is being set with parent property. Consider using the SetParent method instead, with the worldPositionStays argument set to false. This will retain local orientation and scale rather than world orientation and scale, which can prevent common UI scaling issues.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
 
-Received OnSerialization for view ID 2010. We have no such PhotonView! Ignored this if you're leaving a room. State: Joined
+NullReferenceException: Object reference not set to an instance of an object
+  at MinionController+<Die>c__Iterator12.MoveNext () [0x00000] in <filename unknown>:0 
+UnityEngine.MonoBehaviour:StartCoroutine(String, Object)
+UnityEngine.MonoBehaviour:StartCoroutine(String)
+MinionController:OnPhotonSerializeView(PhotonStream, PhotonMessageInfo)
+System.Reflection.MonoMethod:InternalInvoke(Object, Object[], Exception&)
+System.Reflection.MonoMethod:Invoke(Object, BindingFlags, Binder, Object[], CultureInfo)
+System.Reflection.MethodBase:Invoke(Object, Object[])
+PhotonView:ExecuteComponentOnSerialize(Component, PhotonStream, PhotonMessageInfo)
+PhotonView:DeserializeComponent(Component, PhotonStream, PhotonMessageInfo)
+PhotonView:DeserializeView(PhotonStream, PhotonMessageInfo)
+NetworkingPeer:OnSerializeRead(Hashtable, PhotonPlayer, Int32, Int16)
+NetworkingPeer:OnEvent(EventData)
+ExitGames.Client.Photon.PeerBase:DeserializeMessageAndCallback(Byte[])
+ExitGames.Client.Photon.EnetPeer:DispatchIncomingCommands()
+ExitGames.Client.Photon.PhotonPeer:DispatchIncomingCommands()
+PhotonHandler:Update()
+ 
+(Filename:  Line: -1)
+
+Parent of RectTransform is being set with parent property. Consider using the SetParent method instead, with the worldPositionStays argument set to false. This will retain local orientation and scale rather than world orientation and scale, which can prevent common UI scaling issues.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
 
-Received OnSerialization for view ID 2010. We have no such PhotonView! Ignored this if you're leaving a room. State: Joined
+NullReferenceException: Object reference not set to an instance of an object
+  at MinionController+<Die>c__Iterator12.MoveNext () [0x00000] in <filename unknown>:0 
+UnityEngine.MonoBehaviour:StartCoroutine(String, Object)
+UnityEngine.MonoBehaviour:StartCoroutine(String)
+MinionController:OnPhotonSerializeView(PhotonStream, PhotonMessageInfo)
+System.Reflection.MonoMethod:InternalInvoke(Object, Object[], Exception&)
+System.Reflection.MonoMethod:Invoke(Object, BindingFlags, Binder, Object[], CultureInfo)
+System.Reflection.MethodBase:Invoke(Object, Object[])
+PhotonView:ExecuteComponentOnSerialize(Component, PhotonStream, PhotonMessageInfo)
+PhotonView:DeserializeComponent(Component, PhotonStream, PhotonMessageInfo)
+PhotonView:DeserializeView(PhotonStream, PhotonMessageInfo)
+NetworkingPeer:OnSerializeRead(Hashtable, PhotonPlayer, Int32, Int16)
+NetworkingPeer:OnEvent(EventData)
+ExitGames.Client.Photon.PeerBase:DeserializeMessageAndCallback(Byte[])
+ExitGames.Client.Photon.EnetPeer:DispatchIncomingCommands()
+ExitGames.Client.Photon.PhotonPeer:DispatchIncomingCommands()
+PhotonHandler:Update()
+ 
+(Filename:  Line: -1)
+
+Failed to 'network-remove' GameObject. Client is neither owner nor masterClient taking over for owner who left: View (0)2009 on minion_alpha(Clone) 
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
+
+Failed to 'network-remove' GameObject. Client is neither owner nor masterClient taking over for owner who left: View (0)2009 on minion_alpha(Clone) 
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
+
+Failed to 'network-remove' GameObject. Client is neither owner nor masterClient taking over for owner who left: View (0)2009 on minion_alpha(Clone) 
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
+
+Failed to 'network-remove' GameObject. Client is neither owner nor masterClient taking over for owner who left: View (0)2009 on minion_alpha(Clone) 
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
 

@@ -284,7 +284,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	void OnParticleCollision(GameObject other)
 	{
 		if (other.name == "Fireball") {
-			damage (40.0f);
+			damage (30.0f);
 		} else if (other.name == "Explosion") {
 			damage (30.0f);
 		} else if (other.name == "energyBlast") {
@@ -311,7 +311,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 		yield return new WaitForSeconds (4.0f);
 
-		InitState ();
+        InitState ();
 	}
 
 	void InitState()
@@ -557,7 +557,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	[PunRPC]
 	public void OnSkill1()
 	{
-		if (skill1start)
+        if (skill1start)
 			return;
 
 		if (targetEnemy != null) {
@@ -707,14 +707,6 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		GUI.EndGroup();
 		GUI.EndGroup ();	
 
-		/*
-		if (isMine && targetEnemy != null) {
-			Vector3 enemyPos = targetEnemy.transform.position;
-			enemyPos.y += 1;
-			Vector3 pos2 = Camera.main.WorldToScreenPoint (enemyPos);
-			GUI.Label (new Rect (pos2.x, pos2.y, 50, 50), targetEnemy.name);
-		} 
-		*/
 	}
 
 	Vector3 ScreenToWorld( Vector2 screenPos )
