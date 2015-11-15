@@ -216,6 +216,7 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
         if (lastAttackedBy && lastAttackedBy.tag == "Player") {
 			lastAttackedBy.GetComponent<HeroController>().GainExp(my_exp_val);
+			lastAttackedBy.GetComponent<HeroController>().GainGold(20);
 
             GameObject coinObj = ObjectPool.instance.GetObjectForType("coin", true);
             if (coinObj != null)
@@ -228,8 +229,8 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
             GameObject statObj = ObjectPool.instance.GetObjectForType("FloatingDigit", true);
             if (statObj != null)
             {
-                statObj.transform.parent = gm.GetComponent<GameManager>().UI.transform;
-                statObj.GetComponent<GUIText>().text = "+10";
+                statObj.transform.SetParent (gm.GetComponent<GameManager>().UI.transform);
+                statObj.GetComponent<GUIText>().text = "+20";
 
                 Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
                 

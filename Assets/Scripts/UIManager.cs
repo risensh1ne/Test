@@ -11,12 +11,13 @@ public class UIManager : MonoBehaviour {
 
 	public GameObject skill1_btn;
 	public GameObject skill1_cooldown_obj;
-
+	public GameObject skill1_upgrade_btn;
 	public GameObject skill2_btn;
 	public GameObject skill2_cooldown_obj;
-
+	public GameObject skill2_upgrade_btn;
 	public GameObject skill3_btn;
 	public GameObject skill3_cooldown_obj;
+	public GameObject skill3_upgrade_btn;
 
 	public float skill1Cooldown = 5.0f;
 	public float skill1CooldownCurrent;
@@ -26,6 +27,10 @@ public class UIManager : MonoBehaviour {
 
 	public float skill3Cooldown = 5.0f;
 	public float skill3CooldownCurrent;
+
+
+
+	public GameObject goldText;
 
 	public Sprite[] heroIcons;
 
@@ -119,6 +124,24 @@ public class UIManager : MonoBehaviour {
 		skill2_btn.GetComponent<Button> ().interactable = false;
 	}
 
+	public void OnSkill1UpgradeBtnClicked()
+	{
+		player.GetComponent<HeroController> ().skill1Level++;
+		player.GetComponent<HeroController> ().skillUpgradeCnt--;
+	}
+
+	public void OnSkill2UpgradeBtnClicked()
+	{
+		player.GetComponent<HeroController> ().skill2Level++;
+		player.GetComponent<HeroController> ().skillUpgradeCnt--;
+	}
+
+	public void OnSkill3UpgradeBtnClicked()
+	{
+		player.GetComponent<HeroController> ().skill3Level++;
+		player.GetComponent<HeroController> ().skillUpgradeCnt--;
+	}
+
 	void OnGUI()
 	{
         if (player == null)
@@ -162,6 +185,7 @@ public class UIManager : MonoBehaviour {
         gStyle.fontSize = 8;
         gStyle.fontStyle = FontStyle.Bold;
 
+		goldText.GetComponent<Text>().text = player.GetComponent<HeroController>().goldAmount.ToString ();
 
         GUI.DrawTexture(new Rect(20, 80, 60, 60), myteamHeroTexture);
         GUI.DrawTexture(new Rect(20, 140, 50, 10), progressBarBack);
@@ -194,49 +218,68 @@ public class UIManager : MonoBehaviour {
 			//Debug.Log ("Can't find Player object");
 			return;
 		}
-
-
         
-		if (player.GetComponent<HeroController>().targetEnemy == null)
+		if (player.GetComponent<HeroController>().skillUpgradeCnt > 0)
+		{
+			skill1_upgrade_btn.SetActive (true);
+			skill2_upgrade_btn.SetActive (true);
+			skill3_upgrade_btn.SetActive (true);
+		} else {
+			skill1_upgrade_btn.SetActive (false);
+			skill2_upgrade_btn.SetActive (false);
+			skill3_upgrade_btn.SetActive (false);
+		}
+
+		if (player.GetComponent<HeroController>().skill1Level == 0)
 			skill1_btn.GetComponent<Button> ().interactable = false;
+		else {
+			if (player.GetComponent<HeroController>().targetEnemy == null)
+				skill1_btn.GetComponent<Button> ().interactable = false;
 
-		if (skill1CooldownCurrent > 0) {
-			skill1CooldownCurrent -= Time.deltaTime;
-			skill1_cooldown_obj.GetComponent<Image> ().fillAmount = (skill1Cooldown - skill1CooldownCurrent) / skill1Cooldown;
-		} else {
-			skill1CooldownCurrent = 0;
-			skill1_cooldown_obj.GetComponent<Image> ().fillAmount = 0;
+			if (skill1CooldownCurrent > 0) {
+				skill1CooldownCurrent -= Time.deltaTime;
+				skill1_cooldown_obj.GetComponent<Image> ().fillAmount = (skill1Cooldown - skill1CooldownCurrent) / skill1Cooldown;
+			} else {
+				skill1CooldownCurrent = 0;
+				skill1_cooldown_obj.GetComponent<Image> ().fillAmount = 0;
 
-			if (player.GetComponent<HeroController>().targetEnemy != null)
-				skill1_btn.GetComponent<Button> ().interactable = true;
+				if (player.GetComponent<HeroController>().targetEnemy != null)
+					skill1_btn.GetComponent<Button> ().interactable = true;
+			}
 		}
 
-		if (skill2CooldownCurrent > 0) {
-			skill2CooldownCurrent -= Time.deltaTime;
-			skill2_cooldown_obj.GetComponent<Image> ().fillAmount = (skill2Cooldown - skill2CooldownCurrent) / skill2Cooldown;
-		} else {
-			skill2CooldownCurrent = 0;
-			skill2_cooldown_obj.GetComponent<Image> ().fillAmount = 0;
+		if (player.GetComponent<HeroController>().skill2Level == 0)
+			skill2_btn.GetComponent<Button> ().interactable = false;
+		else {
+			if (skill2CooldownCurrent > 0) {
+				skill2CooldownCurrent -= Time.deltaTime;
+				skill2_cooldown_obj.GetComponent<Image> ().fillAmount = (skill2Cooldown - skill2CooldownCurrent) / skill2Cooldown;
+			} else {
+				skill2CooldownCurrent = 0;
+				skill2_cooldown_obj.GetComponent<Image> ().fillAmount = 0;
 
-			if (player.GetComponent<HeroController>().mana >= 20.0f)
-				skill2_btn.GetComponent<Button> ().interactable = true;
-			else
-				skill2_btn.GetComponent<Button> ().interactable = false;
+				if (player.GetComponent<HeroController>().mana >= 20.0f)
+					skill2_btn.GetComponent<Button> ().interactable = true;
+				else
+					skill2_btn.GetComponent<Button> ().interactable = false;
+			}
 		}
 
-		if (skill3CooldownCurrent > 0) {
-			skill3CooldownCurrent -= Time.deltaTime;
-			skill3_cooldown_obj.GetComponent<Image> ().fillAmount = (skill3Cooldown - skill3CooldownCurrent) / skill3Cooldown;
-		} else {
-			skill3CooldownCurrent = 0;
-			skill3_cooldown_obj.GetComponent<Image> ().fillAmount = 0;
-			if (player.GetComponent<HeroController>().mana >= 50.0f)
-				skill3_btn.GetComponent<Button> ().interactable = true;
-			else
-				skill3_btn.GetComponent<Button> ().interactable = false;
+		if (player.GetComponent<HeroController>().skill3Level == 0)
+			skill3_btn.GetComponent<Button> ().interactable = false;
+		else {
+			if (skill3CooldownCurrent > 0) {
+				skill3CooldownCurrent -= Time.deltaTime;
+				skill3_cooldown_obj.GetComponent<Image> ().fillAmount = (skill3Cooldown - skill3CooldownCurrent) / skill3Cooldown;
+			} else {
+				skill3CooldownCurrent = 0;
+				skill3_cooldown_obj.GetComponent<Image> ().fillAmount = 0;
+				if (player.GetComponent<HeroController>().mana >= 50.0f)
+					skill3_btn.GetComponent<Button> ().interactable = true;
+				else
+					skill3_btn.GetComponent<Button> ().interactable = false;
+			}
 		}
-
-
 
 	}
 }

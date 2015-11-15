@@ -3,7 +3,7 @@ using System.Collections;
 
 public class FloatingDigit : MonoBehaviour {
 
-    Color color = new Color(0.8f, 0.8f, 1.0f, 1.0f);
+    Color color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
     float scroll = 0.05f;  // scrolling velocity
     float duration = 1.5f; // time to die
     float alpha;

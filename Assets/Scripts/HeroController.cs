@@ -16,13 +16,17 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	public int level;
 	public float max_exp_val, curr_exp_val, my_exp_val;
 	public float maxHealth, maxMana;
-
+	public float statAttack, statDefense;
     public string heroName;
 
 	Vector2 healthBarSize = new Vector2(50, 5);
 
 	public float attackRange = 1.5f;
 	public float lookRange = 3.0f;
+
+	public int goldAmount = 100;
+	private float goldIncreaseRatePerSec = 5.0f;
+	private float goldTimer =0;
 
 	public GameManager.team attachedTeam;
 
@@ -40,6 +44,12 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 	public bool autoAttack;
 
+	public int skill1Level = 0;
+	public int skill2Level = 0;
+	public int skill3Level = 0;
+
+	public int skillUpgradeCnt = 1;
+	
 	public bool skillTargetSelectionMode;
 	public int selectedSkill;
 	public float skillRange;
@@ -301,8 +311,12 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		if (curr_exp_val >= max_exp_val)
 			LevelUp ();
 
-		gm.GetComponent<PlayerController> ().updateLevelText (gameObject);
-		
+		gm.GetComponent<PlayerController> ().updateLevelText (gameObject);	
+	}
+
+	public void GainGold(int _goldAmount)
+	{
+		goldAmount += _goldAmount;
 	}
 
 	IEnumerator Die()
@@ -356,6 +370,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	void LevelUp()
 	{
 		level++;
+		skillUpgradeCnt++;
 		max_exp_val = 500.0f + (level - 1) * 500.0f;
 		curr_exp_val = 0;
 		
@@ -469,6 +484,12 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
         if (photonView.isMine) {
 			if (isDead)
 				return;
+
+			goldTimer += Time.fixedDeltaTime;
+			if (goldTimer / 1.0f * goldIncreaseRatePerSec > 1.0f) {
+				goldAmount++;
+				goldTimer = 0;
+			}
 
             if (skill1start || skill2start || skill3start)
 				return;

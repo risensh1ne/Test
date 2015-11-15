@@ -94,7 +94,7 @@ public class ObjectPool : MonoBehaviour
 				{
 					GameObject pooledObject = pooledObjects[i][0];
 					pooledObjects[i].RemoveAt(0);
-					pooledObject.transform.parent = null;
+					pooledObject.transform.SetParent(null);
 					pooledObject.SetActiveRecursively(true);
 					
 					return pooledObject;

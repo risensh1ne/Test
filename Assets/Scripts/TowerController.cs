@@ -120,7 +120,7 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
 
         Vector3 pos = Camera.main.WorldToScreenPoint(worldPos);
 
-        GUI.BeginGroup (new Rect(pos.x - 30, Screen.height - pos.y, healthBarSize.x, healthBarSize.y));
+        GUI.BeginGroup (new Rect(pos.x -10, Screen.height - pos.y, healthBarSize.x, healthBarSize.y));
         GUI.DrawTexture (new Rect (0, 0, healthBarSize.x, healthBarSize.y), progressBarBack);
 
 		GUI.BeginGroup (new Rect(0, 0, healthBarSize.x * (health / 100), healthBarSize.y));

@@ -81,8 +81,8 @@ public class GameManager : MonoBehaviour {
         GameObject.Find("UI").GetComponent<UIManager>().initializeUI();
 
         startSpawn = true;
-		StartCoroutine ("SpawnMinion", myTeam);
-        //StartCoroutine("SpawnMinion", GameManager.team.ALPHA);
+		//StartCoroutine ("SpawnMinion", myTeam);
+        StartCoroutine("SpawnMinion", GameManager.team.ALPHA);
     }
 
     /*
@@ -183,8 +183,8 @@ public class GameManager : MonoBehaviour {
 
 			if (nextSpawnRemaining <= 0) {
 				nextSpawnRemaining = spawnPeriod;
-				StartCoroutine ("SpawnMinion", myTeam);
-                //StartCoroutine("SpawnMinion", GameManager.team.ALPHA);
+				//StartCoroutine ("SpawnMinion", myTeam);
+                StartCoroutine("SpawnMinion", GameManager.team.ALPHA);
             }
 		}
 
