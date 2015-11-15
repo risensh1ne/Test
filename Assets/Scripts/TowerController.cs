@@ -165,13 +165,11 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
         }
         else
         {
-
             Collider[] cldrs = Physics.OverlapSphere(firePoint.position, attackRange);
             if (cldrs.Length > 0 && !isAttacking)
             {
                 for (int i = 0; i < cldrs.Length; i++)
                 {
-
                     bool isTarget = false;
                     if (cldrs[i].tag == "Player" || cldrs[i].tag == "minion")
                     {
@@ -187,6 +185,7 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
                         {
                             enemyDistance = dist;
                             enemyIndex = i;
+							//ebug.Log (enemyIndex);
                         }
                     }
                 }
@@ -196,8 +195,10 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
             {
                 targetEnemy = cldrs[enemyIndex].gameObject;
                 IPlayer ip = targetEnemy.GetComponent<IPlayer>();
-                if (!ip.isDead)
+
+				if (!ip.isDead) {
                     gameObject.GetComponent<PhotonView>().RPC("attack", PhotonTargets.All, targetEnemy.transform.position);
+				}
             }
         }
 	}
