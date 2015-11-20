@@ -19,6 +19,16 @@ public class UIManager : MonoBehaviour {
 	public GameObject skill3_cooldown_obj;
 	public GameObject skill3_upgrade_btn;
 
+	public GameObject skill1_star1;
+	public GameObject skill1_star2;
+	public GameObject skill1_star3;
+	public GameObject skill2_star1;
+	public GameObject skill2_star2;
+	public GameObject skill2_star3;
+	public GameObject skill3_star1;
+	public GameObject skill3_star2;
+	public GameObject skill3_star3;
+
 	public float skill1Cooldown = 5.0f;
 	public float skill1CooldownCurrent;
 
@@ -28,7 +38,8 @@ public class UIManager : MonoBehaviour {
 	public float skill3Cooldown = 5.0f;
 	public float skill3CooldownCurrent;
 
-
+	public GameObject respawnLayer;
+	public GameObject menuWindow;
 
 	public GameObject goldText;
 
@@ -51,6 +62,8 @@ public class UIManager : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+
+
         //gm = transform.Find("_GM").gameObject;
         guiScale.x = (float)Screen.width / (float)originalWidth; // calculate hor scale
         guiScale.y = (float)Screen.height / (float)originalHeight; // calculate vert scale
@@ -93,6 +106,18 @@ public class UIManager : MonoBehaviour {
         return idx;
     }
 
+	public void OnQuitBtnClicked()
+	{
+		Application.Quit();
+	}
+
+	public void OnMenuBtnClicked()
+	{
+		if (!menuWindow.GetActive())
+			menuWindow.SetActive(true);
+		else
+			menuWindow.SetActive(false);
+	}
 
 	public void OnSkill1BtnClicked()
 	{
@@ -128,18 +153,39 @@ public class UIManager : MonoBehaviour {
 	{
 		player.GetComponent<HeroController> ().skill1Level++;
 		player.GetComponent<HeroController> ().skillUpgradeCnt--;
+
+		if (player.GetComponent<HeroController> ().skill1Level > 0)
+			skill1_star1.SetActive (true);
+		if (player.GetComponent<HeroController> ().skill1Level > 1)
+			skill1_star2.SetActive (true);
+		if (player.GetComponent<HeroController> ().skill1Level > 2)
+			skill1_star3.SetActive (true);
 	}
 
 	public void OnSkill2UpgradeBtnClicked()
 	{
 		player.GetComponent<HeroController> ().skill2Level++;
 		player.GetComponent<HeroController> ().skillUpgradeCnt--;
+
+		if (player.GetComponent<HeroController> ().skill2Level > 0)
+			skill2_star1.SetActive (true);
+		if (player.GetComponent<HeroController> ().skill2Level > 1)
+			skill2_star2.SetActive (true);
+		if (player.GetComponent<HeroController> ().skill2Level > 2)
+			skill2_star3.SetActive (true);
 	}
 
 	public void OnSkill3UpgradeBtnClicked()
 	{
 		player.GetComponent<HeroController> ().skill3Level++;
 		player.GetComponent<HeroController> ().skillUpgradeCnt--;
+
+		if (player.GetComponent<HeroController> ().skill3Level > 0)
+			skill3_star1.SetActive (true);
+		if (player.GetComponent<HeroController> ().skill3Level > 1)
+			skill3_star2.SetActive (true);
+		if (player.GetComponent<HeroController> ().skill3Level > 2)
+			skill3_star3.SetActive (true);
 	}
 
 	void OnGUI()

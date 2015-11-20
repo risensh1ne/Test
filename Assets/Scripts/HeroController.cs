@@ -19,6 +19,8 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	public float statAttack, statDefense;
     public string heroName;
 
+	public Transform range_obj;
+
 	Vector2 healthBarSize = new Vector2(50, 5);
 
 	public float attackRange = 1.5f;
@@ -41,6 +43,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	public Quaternion realRotation = Quaternion.identity;
 
 	public GameObject gm;
+	public GameObject UI;
 
 	public bool autoAttack;
 
@@ -119,29 +122,22 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 	public void ToggleSkillTargetMode(int skill, float range)
 	{
-		Transform obj = transform.Find ("attack_range");
-
 		if (skill == 0) {
 			selectedSkill = 0;	
-			obj.gameObject.SetActive (false);
+			//obj.gameObject.SetActive (false);
+			skillTargetSelectionMode = false;
 		} else if (skillTargetSelectionMode && skill == selectedSkill) {
 			selectedSkill = 0;
-
-			obj.gameObject.SetActive (false);
+			//obj.gameObject.SetActive (false);
+			skillTargetSelectionMode = false;
 		} else {
 			selectedSkill = skill;
 			skillRange = range;
-
-			Vector3 newScale = new Vector3 ();
-			newScale.x = skillRange;
-			newScale.y = 0.01f;
-			newScale.z = skillRange;
-			obj.transform.localScale = newScale;
-			
-			obj.gameObject.SetActive (true);
+			//obj.gameObject.SetActive (true);
+			skillTargetSelectionMode = true;
 		}
 
-		skillTargetSelectionMode = !skillTargetSelectionMode;
+		//skillTargetSelectionMode = !skillTargetSelectionMode;
 	}
 
 	public void SetAttacker(GameObject attacker)
@@ -323,7 +319,15 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	{
 		changeStateTo (CharacterState.STATE_DEAD);
 
+		if (photonView.isMine) {
+			UI.GetComponent<UIManager>().respawnLayer.SetActive (true);
+		}
+
 		yield return new WaitForSeconds (4.0f);
+
+		if (photonView.isMine) {
+			UI.GetComponent<UIManager>().respawnLayer.SetActive (false);
+		}
 
         InitState ();
 	}
@@ -335,11 +339,20 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		isAttacking = false;
 		autoAttack = false;
 
+		skillTargetSelectionMode = false;
+
 		transform.position = startPos;
 		if (!photonView.isMine)
 			destinationPos = endPos;
 
 		changeStateTo (CharacterState.STATE_IDLE);
+
+		range_obj = transform.Find ("attack_range");
+		Vector3 newScale = new Vector3 ();
+		newScale.x = 10.0f;
+		newScale.y = 0.1f;
+		newScale.z = 10.0f;
+		range_obj.transform.localScale = newScale;
 
 		targetEnemy = null;
 		lastAttackedBy = null;
@@ -389,6 +402,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		anim = GetComponent<Animator> ();
 
 		gm = GameObject.Find ("_GM");
+		UI = GameObject.Find ("UI");
 
 		firePoint = transform.Find ("FirePoint");
 
@@ -491,6 +505,11 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 				goldTimer = 0;
 			}
 
+			if (skillTargetSelectionMode)
+				range_obj.gameObject.SetActive(true);
+			else
+				range_obj.gameObject.SetActive(false);
+
             if (skill1start || skill2start || skill3start)
 				return;
 
@@ -504,9 +523,9 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 				eventPos.y = transform.position.y;
 
 				if (skillTargetSelectionMode) {
-					if (Vector3.Distance (transform.position, eventPos) < skillRange) {
+					if (Vector3.Distance (transform.position, eventPos) < 5.0f) {
 						gameObject.GetComponent<PhotonView> ().RPC ("OnSkill2", PhotonTargets.All, eventPos);
-						gm.GetComponent<UIManager> ().OnSkill2Fire ();
+						UI.GetComponent<UIManager> ().OnSkill2Fire ();
 						ToggleSkillTargetMode (0, 0);
 						skill2start = true;
 					} else {
@@ -667,8 +686,8 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 			GameObject[] attackedList = getAttackTargetList(targetPos, 2.0f);
 
 			for (int i=0; i < attackedList.Length; i++) {
-
 				attackedList[i].GetComponent<IPlayer>().SetAttacker(this.gameObject);
+				attackedList[i].GetComponent<IPlayer>().damage(30.0f);
 			}
 
 			obj.transform.position = targetPos;
@@ -683,7 +702,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 	IEnumerator Cyclone()
 	{
-		float origHealthRegenRate = healthRegenRate;
+		float origHealthRegenRate = healthRegenRate;	
 		float origManaRegenRate = manaRegenRate;
 		
 		healthRegenRate *= 10;
@@ -693,7 +712,6 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		if (obj != null) {
 			obj.transform.position = transform.position;
 			obj.GetComponent<ParticleSystem> ().Play ();
-
 		}
 		mana -= 50.0f;
 		skill3start = false;

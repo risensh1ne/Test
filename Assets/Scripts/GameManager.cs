@@ -6,9 +6,10 @@ public class GameManager : MonoBehaviour {
 
     public GameObject UI;
 
-	public float spawnPeriod = 2.0f;
+	public float spawnPeriod = 10.0f;
 	float nextSpawnRemaining;
-	bool startSpawn;
+	private int minionSpawnCount = 3;
+	private bool startSpawn;
 
 	public string myHeroName;
 	public string userName;
@@ -81,8 +82,7 @@ public class GameManager : MonoBehaviour {
         GameObject.Find("UI").GetComponent<UIManager>().initializeUI();
 
         startSpawn = true;
-		//StartCoroutine ("SpawnMinion", myTeam);
-        StartCoroutine("SpawnMinion", GameManager.team.ALPHA);
+		StartCoroutine ("SpawnMinion");
     }
 
     /*
@@ -150,28 +150,31 @@ public class GameManager : MonoBehaviour {
 		return heroObj;
 	}
 
-	IEnumerator SpawnMinion(GameManager.team team) {
+	IEnumerator SpawnMinion() {
 	
-		yield return new WaitForSeconds (1.0f);
+		for (int i=0; i < minionSpawnCount; i++) {
 
-		if (team == GameManager.team.ALPHA) {
+			yield return new WaitForSeconds (1.0f);
 
-			GameObject minionAlpha = PhotonNetwork.Instantiate ("minion_alpha", 
-			                           alphaHome.position, Quaternion.identity, 0);
-
+			//GameObject minionAlpha = PhotonNetwork.Instantiate ("minion_alpha", 
+			//                           alphaHome.position, Quaternion.identity, 0);
+			GameObject minionAlpha = NetworkObjectPool.instance.SpawnObject ("minion_alpha", alphaHome.position);
 			if (minionAlpha != null) {
 				minionAlpha.GetComponent<MinionController> ().initState (GameManager.team.ALPHA);
-				minionAlpha.GetComponent<MinionController> ().resetState ();
+				//minionAlpha.GetComponent<MinionController> ().resetState ();
 			}
-		} else if (team == GameManager.team.BETA) {
-			GameObject minionBeta = PhotonNetwork.Instantiate ("minion_beta", 
-			                                                    betaHome.position, Quaternion.identity, 0);
+	
+			//GameObject minionBeta = PhotonNetwork.Instantiate ("minion_beta", 
+			//                                                    betaHome.position, Quaternion.identity, 0);
 
+			GameObject minionBeta = NetworkObjectPool.instance.SpawnObject ("minion_beta", betaHome.position);
 			if (minionBeta != null) {
 				minionBeta.GetComponent<MinionController> ().initState (GameManager.team.BETA);
-				minionBeta.GetComponent<MinionController> ().resetState ();
+				//minionBeta.GetComponent<MinionController> ().resetState ();
 			}
+
 		}
+
 
 	}
 	
@@ -183,8 +186,7 @@ public class GameManager : MonoBehaviour {
 
 			if (nextSpawnRemaining <= 0) {
 				nextSpawnRemaining = spawnPeriod;
-				//StartCoroutine ("SpawnMinion", myTeam);
-                StartCoroutine("SpawnMinion", GameManager.team.ALPHA);
+				StartCoroutine ("SpawnMinion");
             }
 		}
 

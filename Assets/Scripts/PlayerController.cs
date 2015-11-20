@@ -116,22 +116,6 @@ public class PlayerController : MonoBehaviour {
 	{
 		return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
 	}
-	
-	public void attackTargetSelectionMode(bool mode)
-	{
-		GameObject player = gameObject.GetComponent<GameManager> ().player;
-		if (player == null) {
-			return;
-		}
-		attackSelection = mode;
-		Transform obj = player.transform.Find ("attack_range");
-		Vector3 newScale = new Vector3 ();
-		newScale.x = obj.transform.localScale.x * 10;
-		newScale.y = 0.01f;
-		newScale.z = obj.transform.localScale.z * 10;
-		obj.transform.localScale = newScale;
 
-		obj.gameObject.SetActive (mode);
-	}
 	
 }

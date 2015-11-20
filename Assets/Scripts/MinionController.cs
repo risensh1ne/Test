@@ -22,18 +22,19 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 	public Vector3 realPosition;
 	public Quaternion realRotation = Quaternion.identity;
 	private bool gotFirstUpdate;
+	
+	private int originalWidth = 1024;
+	private int originalHeight = 600;
+	private Vector3 guiScale;
 
-    private int originalWidth = 1024;
-    private int originalHeight = 600;
-
-    private float my_exp_val = 100.0f;
+	private float my_exp_val = 100.0f;
 	
 	GameObject targetEnemy;
 
 	bool bMoving;
 	bool bAttacking;
 	bool bDead;
-
+	
 	private GameObject lastAttackedBy;
 
 	public Animator anim;
@@ -76,12 +77,18 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 	// Use this for initialization
 	void Start () {
-    }
+
+		guiScale.x = (float)Screen.width / (float)originalWidth; // calculate hor scale
+		guiScale.y = (float)Screen.height / (float)originalHeight; // calculate vert scale
+		guiScale.z = 1.0f;
+	}
 
 	public void initState(GameManager.team team) {
 
 		if (gm == null)
 			gm = GameObject.Find ("_GM").gameObject;
+		if (anim == null) 
+			anim = GetComponent<Animator> ();
 
 		attachedTeam = team;
 
@@ -96,10 +103,27 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 		resetState ();
 	}
 
+	public void resetState() {
+
+		isDead = false;
+		isMoving = false;
+		isAttacking = false;
+		
+		lastAttackedBy = null;
+		
+		health = 50.0f;
+		walkSpeed = 2.0f;
+		
+		changeStateTo (CharacterState.STATE_MOVING);
+		
+		Vector3 direction = (endPos - transform.position).normalized;
+		transform.position = startPos;
+		transform.rotation = Quaternion.LookRotation (direction);
+	}
+
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) 
 	{
-		if (anim == null) 
-			anim = GetComponent<Animator> ();
+		//Debug.Log (photonView.viewID + "-->" + info.photonView.viewID + ":" + health);
 
 		if (stream.isWriting) {
 			stream.SendNext (gameObject.transform.position);
@@ -113,7 +137,7 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 			realPosition = (Vector3)stream.ReceiveNext();
 			realRotation = (Quaternion)stream.ReceiveNext();
 			health = (float)stream.ReceiveNext();
-			
+
 			isMoving = (bool)stream.ReceiveNext();
 			isAttacking = (bool)stream.ReceiveNext();
 			isDead = (bool)stream.ReceiveNext();
@@ -123,10 +147,10 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 				transform.rotation = realRotation;
 				gotFirstUpdate = true;
 			}
-			
-			if (health == 0) {
-				StartCoroutine("Die");
-			}
+
+			//if (health == 0) {
+			//	StartCoroutine("Die");
+			//}
 		}		
 	}
 
@@ -151,35 +175,13 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 		curr_state = newState; 
 	}
 
-	public void resetState() {
-
-		if (anim == null) 
-			anim = GetComponent<Animator> ();
-
-		isDead = false;
-		isMoving = false;
-		isAttacking = false;
-
-		lastAttackedBy = null;
-
-		health = 50.0f;
-		walkSpeed = 2.0f;
-
-		changeStateTo (CharacterState.STATE_MOVING);
-
-		Vector3 direction = (endPos - transform.position).normalized;
-		transform.position = startPos;
-		transform.rotation = Quaternion.LookRotation (direction);
-	}
-
 	public void OnNormalAttack() {
 		if (targetEnemy != null) {
 			if (targetEnemy.tag == "Player" || targetEnemy.tag == "minion" || targetEnemy.tag == "defender" ) {
 				IPlayer ip = targetEnemy.GetComponent<IPlayer>();
-				if (ip.isDead) {
-					changeStateTo (CharacterState.STATE_DEAD);
-				} else {
-					targetEnemy.GetComponent<PhotonView> ().RPC ("DamageSync", PhotonTargets.All, 10.0f);
+				if (!ip.isDead) {
+					//targetEnemy.GetComponent<PhotonView> ().RPC ("DamageSync", PhotonTargets.All, 10.0f);
+					targetEnemy.GetComponent<MinionController>().damage(10.0f);
 				}
 			}
 		}
@@ -198,19 +200,16 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 		health -= d;
 		if (health <= 0) {
-			StartCoroutine("Die");
+			if (curr_state != CharacterState.STATE_DEAD)
+				StartCoroutine("Die");
 		}
 	}
-
-
+	
 	IEnumerator Die()
 	{
-		//if (anim == null) 
-		//	anim = GetComponent<Animator> ();
-
-		isDead = true;
-		isMoving = false;
-		isAttacking = false;
+		//isDead = true;
+		//isMoving = false;
+		//isAttacking = false;
 
 		changeStateTo (CharacterState.STATE_DEAD);
 
@@ -232,6 +231,8 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
                 statObj.transform.SetParent (gm.GetComponent<GameManager>().UI.transform);
                 statObj.GetComponent<GUIText>().text = "+20";
 
+				statObj.GetComponent<GUIText>().fontSize = (int)(20 * guiScale.y);
+
                 Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
                 
                 pos.x = Mathf.Clamp((pos.x - 10) / Screen.width, 0.05f, 0.95f);
@@ -248,9 +249,10 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
         }
 
 		yield return new WaitForSeconds (3.0f);
-		//PhotonView.DestroyObject (gameObject);
-		PhotonNetwork.RemoveRPCs(GetComponent<PhotonView>());
-		PhotonNetwork.Destroy(gameObject);
+
+		NetworkObjectPool.instance.DespawnObject(gameObject);
+
+		yield return null;
 	}
 
 
@@ -259,8 +261,6 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 		if (other.name == "Fireball") {
             if (other.GetComponent<FireballData>().team != attachedTeam)
 			    damage (40.0f);
-		} else if (other.name == "Explosion") {
-			damage (30.0f);
 		}
 	}
 
@@ -274,6 +274,9 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 	}
 
 	void FixedUpdate() {
+
+		if (anim == null) 
+			return;
 
 		if (photonView.isMine) {
 			if (startPos == null || endPos == null)
