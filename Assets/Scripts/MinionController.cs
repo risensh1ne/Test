@@ -261,9 +261,12 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 		if (other.name == "Fireball") {
             if (other.GetComponent<FireballData>().team != attachedTeam)
 			    damage (40.0f);
+		} else if (other.name == "Explosion") {
+			if (other.GetComponent<ExplosionData>().team != attachedTeam)
+				damage (50.0f);
 		}
 	}
-
+	
 	// Update is called once per frame
 	void Update () {
 		if (startPos == null || endPos == null)

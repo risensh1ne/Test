@@ -683,6 +683,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 		GameObject obj = ObjectPool.instance.GetObjectForType ("Explosion", true);
 		if (obj != null) {
+			obj.GetComponent<ExplosionData>().team = attachedTeam;
 			GameObject[] attackedList = getAttackTargetList(targetPos, 2.0f);
 
 			for (int i=0; i < attackedList.Length; i++) {
