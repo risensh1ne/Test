@@ -125,14 +125,14 @@ public class NetworkObjectPool : Photon.MonoBehaviour {
 	{
 		GameObject obj = FindGO (ourObjectID);
 		obj.transform.position = spawnPos;
-		obj.SetActive (true);
+
 		if (obj.tag == "minion") {
-			Debug.Log (obj.name);
 			if (obj.name == "minion_alpha(Clone)")
 				obj.GetComponent<MinionController> ().initState (GameManager.team.ALPHA);
 			else 
 				obj.GetComponent<MinionController> ().initState (GameManager.team.BETA);
 		}
+		obj.SetActive (true);
 	}
 	
 	/// <summary>

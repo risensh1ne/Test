@@ -60,6 +60,8 @@ public class UIManager : MonoBehaviour {
     private int originalHeight = 600;
     private Vector3 guiScale;
 
+	private GameObject enemyHeroObj;
+
     // Use this for initialization
     void Start () {
 
@@ -216,6 +218,7 @@ public class UIManager : MonoBehaviour {
         */
         
         GameObject[] playersInGame = GameObject.FindGameObjectsWithTag("Player");
+
         foreach (GameObject networkplayer in playersInGame)
         {
             object[] data = networkplayer.GetComponent<PhotonView>().instantiationData;
@@ -223,8 +226,10 @@ public class UIManager : MonoBehaviour {
             GameManager.team _team = (GameManager.team)data[1];
 
             //Debug.Log(heroName + "," + _team.ToString() + "," + myTeam.ToString());
-            if (_team != myTeam)
+            if (_team != myTeam) {
                 enemyteamHeroTexture = heroIcons[getHeroIconIndex(heroName)].texture;
+				enemyHeroObj = networkplayer;
+			}
         }
 
         GUIStyle gStyle = new GUIStyle();
@@ -235,7 +240,7 @@ public class UIManager : MonoBehaviour {
 
         GUI.DrawTexture(new Rect(20, 80, 60, 60), myteamHeroTexture);
         GUI.DrawTexture(new Rect(20, 140, 50, 10), progressBarBack);
-        GUI.DrawTexture(new Rect(20, 140, 50 * (player.GetComponent<HeroController>().health / 100), 10), progressBarHealth);
+		GUI.DrawTexture(new Rect(20, 140, 60 * (player.GetComponent<HeroController>().health / player.GetComponent<HeroController>().maxHealth), 10), progressBarHealth);
         if (player.GetComponent<IPlayer>().isDead)
         {
             GUI.Label(new Rect(25, 100, 100, 20), "Respawning", gStyle);
@@ -243,13 +248,13 @@ public class UIManager : MonoBehaviour {
 
         if (enemyteamHeroTexture != null)
         {
-            GUI.DrawTexture(new Rect(Screen.width - 70, 80, 60, 60), enemyteamHeroTexture);
-            GUI.DrawTexture(new Rect(Screen.width - 70, 140, 50, 10), progressBarBack);
-            GUI.DrawTexture(new Rect(Screen.width - 70, 140, 50 * (player.GetComponent<HeroController>().health / 100), 10), progressBarHealth);
+            GUI.DrawTexture(new Rect(originalWidth - 70, 80, 60, 60), enemyteamHeroTexture);
+			GUI.DrawTexture(new Rect(originalWidth - 70, 140, 50, 10), progressBarBack);
+			GUI.DrawTexture(new Rect(originalWidth - 70, 140, 60 * (enemyHeroObj.GetComponent<HeroController>().health / enemyHeroObj.GetComponent<HeroController>().maxHealth), 10), progressBarHealth);
 
-            if (player.GetComponent<IPlayer>().isDead)
+            if (enemyHeroObj.GetComponent<IPlayer>().isDead)
             {
-                GUI.Label(new Rect(Screen.width - 65, 70, 100, 20), "Respawning", gStyle);
+				GUI.Label(new Rect(originalWidth - 65, 100, 100, 20), "Respawning", gStyle);
             }
         }
 
