@@ -158,20 +158,20 @@ public class GameManager : MonoBehaviour {
 
 			//GameObject minionAlpha = PhotonNetwork.Instantiate ("minion_alpha", 
 			//                           alphaHome.position, Quaternion.identity, 0);
-			GameObject minionAlpha = NetworkObjectPool.instance.SpawnObject ("minion_alpha", alphaHome.position);
-			if (minionAlpha != null) {
-				minionAlpha.GetComponent<MinionController> ().initState (GameManager.team.ALPHA);
+			NetworkObjectPool.instance.SpawnObject ("minion_alpha", alphaHome.position);
+			//if (minionAlpha != null) {
+			//	minionAlpha.GetComponent<MinionController> ().initState (GameManager.team.ALPHA);
 				//minionAlpha.GetComponent<MinionController> ().resetState ();
-			}
+			//}
 	
 			//GameObject minionBeta = PhotonNetwork.Instantiate ("minion_beta", 
 			//                                                    betaHome.position, Quaternion.identity, 0);
 
-			GameObject minionBeta = NetworkObjectPool.instance.SpawnObject ("minion_beta", betaHome.position);
-			if (minionBeta != null) {
-				minionBeta.GetComponent<MinionController> ().initState (GameManager.team.BETA);
+			NetworkObjectPool.instance.SpawnObject ("minion_beta", betaHome.position);
+			//if (minionBeta != null) {
+			//	minionBeta.GetComponent<MinionController> ().initState (GameManager.team.BETA);
 				//minionBeta.GetComponent<MinionController> ().resetState ();
-			}
+			//}
 
 		}
 

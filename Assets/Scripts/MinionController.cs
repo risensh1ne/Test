@@ -123,8 +123,6 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) 
 	{
-		//Debug.Log (photonView.viewID + "-->" + info.photonView.viewID + ":" + health);
-
 		if (stream.isWriting) {
 			stream.SendNext (gameObject.transform.position);
 			stream.SendNext (gameObject.transform.rotation);
@@ -134,6 +132,8 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 			stream.SendNext (isAttacking);
 			stream.SendNext (isDead);
 		} else {
+			//Debug.Log (info.photonView.viewID + ":" + realPosition);
+
 			realPosition = (Vector3)stream.ReceiveNext();
 			realRotation = (Quaternion)stream.ReceiveNext();
 			health = (float)stream.ReceiveNext();
@@ -143,6 +143,7 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 			isDead = (bool)stream.ReceiveNext();
 
 			if(gotFirstUpdate == false) {
+				Debug.Log (info.photonView.viewID + ":" + realPosition);
 				transform.position = realPosition;
 				transform.rotation = realRotation;
 				gotFirstUpdate = true;

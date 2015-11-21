@@ -70,6 +70,7 @@ public class NetworkObjectPool : Photon.MonoBehaviour {
 		foreach(int obj in pooled)
 		{
 			FindGO (obj).transform.parent = transform;
+			FindGO (obj).SetActive(false);
 			PooledObjects.Add (FindGO (obj));
 		}
 	}
@@ -122,8 +123,16 @@ public class NetworkObjectPool : Photon.MonoBehaviour {
 	[PunRPC]
 	public void RPC_SpawnObject(Vector3 spawnPos, int ourObjectID)
 	{
-		FindGO (ourObjectID).transform.position = spawnPos;
-		FindGO (ourObjectID).SetActive (true);
+		GameObject obj = FindGO (ourObjectID);
+		obj.transform.position = spawnPos;
+		obj.SetActive (true);
+		if (obj.tag == "minion") {
+			Debug.Log (obj.name);
+			if (obj.name == "minion_alpha(Clone)")
+				obj.GetComponent<MinionController> ().initState (GameManager.team.ALPHA);
+			else 
+				obj.GetComponent<MinionController> ().initState (GameManager.team.BETA);
+		}
 	}
 	
 	/// <summary>
