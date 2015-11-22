@@ -61,15 +61,20 @@ public class UIManager : MonoBehaviour {
     private Vector3 guiScale;
 
 	private GameObject enemyHeroObj;
+	private float elapsedTimeRefreshPeriod;
+	private float elapsedTimeRefreshTimer;
+
+	public GameObject elapsedTimeText;
 
     // Use this for initialization
     void Start () {
-
-
+		
         //gm = transform.Find("_GM").gameObject;
         guiScale.x = (float)Screen.width / (float)originalWidth; // calculate hor scale
         guiScale.y = (float)Screen.height / (float)originalHeight; // calculate vert scale
         guiScale.z = 1.0f;
+
+		elapsedTimeRefreshTimer = 0;
     }
 
 	public void initializeUI()
@@ -190,6 +195,22 @@ public class UIManager : MonoBehaviour {
 			skill3_star3.SetActive (true);
 	}
 
+	void DisplayElapsedTimeText()
+	{
+		elapsedTimeRefreshTimer += Time.deltaTime;
+		if (elapsedTimeRefreshTimer >= elapsedTimeRefreshPeriod) {
+			int secondsSinceStartup = (int)Time.realtimeSinceStartup;
+			int minutes = Mathf.FloorToInt(secondsSinceStartup /60);
+			int seconds = Mathf.FloorToInt(secondsSinceStartup - minutes * 60);
+			string formattedTime = (minutes < 10) ? "0" + minutes.ToString() : minutes.ToString();
+			formattedTime += ":";
+			formattedTime += (seconds < 10) ? "0" + seconds.ToString() : seconds.ToString();
+			
+			elapsedTimeText.GetComponent<Text>().text = formattedTime;
+			elapsedTimeRefreshTimer = 0;
+		}
+	}
+
 	void OnGUI()
 	{
         if (player == null)
@@ -216,7 +237,9 @@ public class UIManager : MonoBehaviour {
             GUI.Label(new Rect(300, 100, 200, 50), _playersInGame.Length + "," + txt, stl);
         }
         */
-        
+		DisplayElapsedTimeText();
+
+
         GameObject[] playersInGame = GameObject.FindGameObjectsWithTag("Player");
 
         foreach (GameObject networkplayer in playersInGame)
