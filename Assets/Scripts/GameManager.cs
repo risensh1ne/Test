@@ -160,8 +160,6 @@ public class GameManager : MonoBehaviour {
 			NetworkObjectPool.instance.SpawnObject ("minion_beta", betaHome.position);
 
 		}
-
-
 	}
 	
 	// Update is called once per frame

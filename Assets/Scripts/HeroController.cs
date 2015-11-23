@@ -688,7 +688,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 			for (int i=0; i < attackedList.Length; i++) {
 				attackedList[i].GetComponent<IPlayer>().SetAttacker(this.gameObject);
-				attackedList[i].GetComponent<IPlayer>().damage(30.0f);
+				//attackedList[i].GetComponent<IPlayer>().damage(30.0f);
 			}
 
 			obj.transform.position = targetPos;
