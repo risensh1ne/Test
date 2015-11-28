@@ -25,9 +25,11 @@ public class ButtonClickHandler : MonoBehaviour {
 		lm.GetComponent<LobbyManager> ().JoinGame ();
 	}
 
-	public void OnRoomClick(string roomName)
+	public void OnRoomClick(GameObject roomInfo)
 	{
+		string roomName = roomInfo.GetComponent<UILabel>().text;
 		lm.GetComponent<LobbyManager> ().SetRoomSelected(roomName);
+
 	}
 
 	public void OnHeroButtonClick(string name)

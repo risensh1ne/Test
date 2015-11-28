@@ -4,14 +4,11 @@ using System.Collections;
 public class LobbyManager : MonoBehaviour {
 
 	string userName;
+	string userID;
 	public string heroName;
 
 	public GameManager.team team;
 	
-	public GameObject userNameBox;
-	public GameObject inputUserName;
-	public GameObject buttonLogin;
-	public GameObject windowChat;
 	public GameObject buttonCreateGame;
 	public GameObject buttonJoinGame;
 
@@ -43,20 +40,35 @@ public class LobbyManager : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
-		inputUserName.GetComponent<UIInput> ().isSelected = true;
+
+		/*
+		for (int i=0; i < 15; i++) {
+			GameObject roomInfo = Instantiate(roomPrefab) as GameObject;
+			
+			GameObject label = roomInfo.transform.FindChild("roomName").gameObject;		
+			label.GetComponent<UILabel>().text = "room" + i;
+			GameObject numPlayer = roomInfo.transform.FindChild("numPlayer").gameObject;		
+			numPlayer.GetComponent<UILabel>().text =  i + "/4";
+
+			NGUITools.AddChild(tableRoom, roomInfo);
+			
+			tableRoom.GetComponent<UITable>().Reposition();
+		}
+*/
+		Connect ();
 	}
 
 	public void Connect() {
-		if (inputUserName.GetComponent<UIInput> ().label.text.Length == 0) {
-			return;
-		}
-		userName = inputUserName.GetComponent<UIInput> ().label.text;
+
+		userID = PlayerPrefs.GetString("userID");
+		userName = PlayerPrefs.GetString("userName");
 
 		PhotonNetwork.player.name = userName;
 		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
 	}
 
 	public void CreateGame() {
+
 		RoomOptions roomOptions = new RoomOptions() { isVisible = true, isOpen = true, maxPlayers = 4 };
 		bool result = PhotonNetwork.JoinOrCreateRoom (userName, roomOptions, TypedLobby.Default);
 		if (!result)
@@ -69,11 +81,25 @@ public class LobbyManager : MonoBehaviour {
 
 	public void StartGame()
     {
-
         GetComponent<PhotonView>().RPC("RealStartGame", PhotonTargets.All);
 	}
 
 	public void SetRoomSelected(string roomName) {
+	
+		Color dftColor = new Color();
+		ColorUtility.TryParseHtmlString("#3C250FFF", out dftColor);
+
+		for (int i=0; i < tableRoom.transform.childCount; i++) {
+			GameObject roomInfo = tableRoom.transform.GetChild (i).gameObject;
+			string _roomName = roomInfo.transform.FindChild("roomName").GetComponent<UILabel>().text;
+
+			if (roomName != _roomName) 
+				roomInfo.transform.FindChild("Button").GetComponent<UIButton>().defaultColor = dftColor;
+			else 
+				roomInfo.transform.FindChild("Button").GetComponent<UIButton>().defaultColor = Color.red;
+			roomInfo.transform.FindChild("Button").GetComponent<UIButton>().UpdateColor(true);
+		}
+
 		selectedRoomName = roomName;
         buttonJoinGame.GetComponent<UIButton>().isEnabled = true;
     }
@@ -107,16 +133,14 @@ public class LobbyManager : MonoBehaviour {
 		Debug.Log ("OnJoinedLobby");
 		connecting = false;
 
-		userNameBox.SetActive (false);
-		windowChat.SetActive (true);
 		buttonCreateGame.SetActive (true);
 		buttonJoinGame.SetActive(true);
 		roomCtrl.SetActive (true);
 
         buttonJoinGame.GetComponent<UIButton>().isEnabled = false;
         selectedRoomName = "";
-    }
-
+	}
+	
 	public void OnChat(string chatText) {
 		chatInputRoom.GetComponent<UIInput> ().value = "";
 		chatInputRoom.GetComponent<UIInput> ().isSelected = true;
@@ -126,11 +150,10 @@ public class LobbyManager : MonoBehaviour {
 	}
 
 	void OnReceivedRoomListUpdate() {
+		Debug.Log ("OnReceivedRoomListUpdate");
 
 		if (PhotonNetwork.insideLobby) {
-		
 			int childCount = tableRoom.transform.childCount;
-			Debug.Log (childCount);
 			if (childCount > 0) {
 				for (int i = childCount - 1; i >= 0; i--)
 				{
