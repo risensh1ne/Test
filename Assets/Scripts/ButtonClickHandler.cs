@@ -34,7 +34,7 @@ public class ButtonClickHandler : MonoBehaviour {
 
 	public void OnHeroButtonClick(string name)
 	{
-        Debug.Log(name + "clicked!!");
+        //Debug.Log(name + "clicked!!");
 		lm.GetComponent<LobbyManager>().SelectHero(name);
 	}
 
