@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class LobbyManager : MonoBehaviour {
@@ -7,10 +7,21 @@ public class LobbyManager : MonoBehaviour {
 	string userID;
 	public string heroName;
 
+	public int teamSeedNumber;
+	public int globalSeedNumber;
+	public int currentSeedNumber;
+
 	public GameManager.team team;
 	
 	public GameObject buttonCreateGame;
 	public GameObject buttonJoinGame;
+	public GameObject buttonStartGame;
+	public GameObject buttonReady;
+	public GameObject buttonCreateRoom;
+	public GameObject createRoomDlg;
+
+	public GameObject inputRoomName;
+	public GameObject selectRoomCapacity;
 
 	public GameObject roomPanel;
 
@@ -20,15 +31,16 @@ public class LobbyManager : MonoBehaviour {
 
 	public Sprite[] heroSprites;
 
-	public GameObject alphaHeroSprite;
-	public GameObject betaHeroSprite;
+	public GameObject alphaGroupObj;
+	public GameObject betaGroupObj;
 
-	public GameObject alphaHeroNameLabel;
-	public GameObject betaHeroNameLabel;
+	public GameObject heroSpriteObj;
+	public GameObject heroNameObj;
+	public GameObject heroSelectView;
 
-	public GameObject buttonStartGame;
+	public bool selectionStarted;
 
-
+	public float selectionTimer;
 
 	public GameObject chatInputRoom;
 	public UILabel chatLabel;
@@ -36,10 +48,14 @@ public class LobbyManager : MonoBehaviour {
 
 	bool connecting;
 
-	private string selectedRoomName;
-	
+	string selectedRoomName;
+	string currentRoomName;
+	int roomCapacity;
+	int roomPlayerCnt;
+
 	// Use this for initialization
 	void Start () {
+		selectionStarted = false;
 
 		/*
 		for (int i=0; i < 15; i++) {
@@ -68,11 +84,27 @@ public class LobbyManager : MonoBehaviour {
 	}
 
 	public void CreateGame() {
+		createRoomDlg.SetActive(true);
 
-		RoomOptions roomOptions = new RoomOptions() { isVisible = true, isOpen = true, maxPlayers = 4 };
-		bool result = PhotonNetwork.JoinOrCreateRoom (userName, roomOptions, TypedLobby.Default);
-		if (!result)
+	}
+
+	public void CreateRoom() {
+
+		currentRoomName = inputRoomName.GetComponent<UIInput>().value;
+		roomCapacity = System.Int32.Parse(selectRoomCapacity.GetComponent<UIPopupList>().value);
+
+		ExitGames.Client.Photon.Hashtable htRoomProps = new ExitGames.Client.Photon.Hashtable();
+		htRoomProps.Add("userName", userName);
+
+		RoomOptions roomOptions = new RoomOptions() { isVisible = true, isOpen = true, customRoomProperties = htRoomProps, 
+			maxPlayers = (byte)roomCapacity };
+
+		bool result = PhotonNetwork.JoinOrCreateRoom (currentRoomName, roomOptions, TypedLobby.Default);
+		if (!result) {
 			Debug.Log ("createRoom error");
+		}
+
+		createRoomDlg.SetActive(false);
 	}
 
 	public void JoinGame() {
@@ -81,7 +113,7 @@ public class LobbyManager : MonoBehaviour {
 
 	public void StartGame()
     {
-        GetComponent<PhotonView>().RPC("RealStartGame", PhotonTargets.All);
+        GetComponent<PhotonView>().RPC("OnStartGame", PhotonTargets.All);
 	}
 
 	public void SetRoomSelected(string roomName) {
@@ -100,27 +132,26 @@ public class LobbyManager : MonoBehaviour {
 			roomInfo.transform.FindChild("Button").GetComponent<UIButton>().UpdateColor(true);
 		}
 
+
 		selectedRoomName = roomName;
         buttonJoinGame.GetComponent<UIButton>().isEnabled = true;
     }
-
-	public void SelectHero(string name) {
+	
+	public void OnSelectHero(string name) {
 		heroName = name;
 
-		if (team == GameManager.team.ALPHA) 
-			alphaHeroSprite.GetComponent<UISprite> ().spriteName = name;
-		else 
-			betaHeroSprite.GetComponent<UISprite> ().spriteName = name;
+		heroSpriteObj.GetComponent<UISprite> ().spriteName = name;
+		heroNameObj.GetComponent<UILabel>().text = userName;
 
-        Debug.Log(name);
-
-        string msg = team + ":" + heroName;
+        string msg = team + ":" + userName + ":" + heroName + ":" + globalSeedNumber;
         GetComponent<PhotonView>().RPC("UpdateHeroSelection", PhotonTargets.AllBuffered, msg);
     }
 	
 	public void ExitRoom(){
-		string msg = team + ":" + userName;
-		GetComponent<PhotonView> ().RPC ("ExitPlayerInfo", PhotonTargets.Others, msg);
+		string msg = team + ":::" + teamSeedNumber;
+		GetComponent<PhotonView> ().RPC ("UpdateHeroSelection", PhotonTargets.AllBuffered, msg);
+
+		//GetComponent<PhotonView> ().RPC ("ExitPlayerInfo", PhotonTargets.Others, msg);
 
 		string chatMessage = userName + " has left the room";
 		GetComponent<PhotonView> ().RPC ("SendChatMessage", PhotonTargets.Others, chatMessage);
@@ -172,8 +203,13 @@ public class LobbyManager : MonoBehaviour {
 			foreach (RoomInfo room in PhotonNetwork.GetRoomList()) {
 				GameObject roomInfo = Instantiate(roomPrefab) as GameObject;
 
-				GameObject label = roomInfo.transform.FindChild("roomName").gameObject;		
-				label.GetComponent<UILabel>().text = room.name;
+				Debug.Log (room.customProperties);
+				Debug.Log (room);
+				GameObject labelName = roomInfo.transform.FindChild("roomName").gameObject;		
+				labelName.GetComponent<UILabel>().text = room.name;
+				GameObject labelCapacity = roomInfo.transform.FindChild("numPlayer").gameObject;		
+				labelCapacity.GetComponent<UILabel>().text = room.playerCount.ToString () + "/" + room.maxPlayers.ToString ();
+
 				NGUITools.AddChild(tableRoom, roomInfo);
 					
 				tableRoom.GetComponent<UITable>().Reposition();
@@ -194,12 +230,18 @@ public class LobbyManager : MonoBehaviour {
 		connecting = false;
 		
 		if (PhotonNetwork.inRoom) {
+			string _userName = PhotonNetwork.room.customProperties["userName"].ToString();
+			currentRoomName = PhotonNetwork.room.name;
+			roomCapacity = PhotonNetwork.room.maxPlayers;
+
 			roomPanel.SetActive (true);
             
-			buttonStartGame.GetComponent<UIButton>().isEnabled = false;
-            
+			if (PhotonNetwork.isMasterClient) {
+				buttonStartGame.SetActive (true);
+				buttonStartGame.GetComponent<UIButton>().isEnabled = false;
+			}
 
-            string chatMessage = userName + " has joined the room";
+            string chatMessage = _userName + " has joined the room";
             GetComponent<PhotonView>().RPC("SendChatMessage", PhotonTargets.Others, chatMessage);
 
             int numPlayersInRoom = 0;
@@ -212,9 +254,37 @@ public class LobbyManager : MonoBehaviour {
 			} else {
 				team = GameManager.team.BETA;
 			}			
+			teamSeedNumber = (int)Mathf.Ceil((float)numPlayersInRoom / 2); 
+			globalSeedNumber = numPlayersInRoom;
 
-			string msg = team + ":" + userName;
-			GetComponent<PhotonView> ().RPC ("JoinPlayerInfo", PhotonTargets.AllBuffered, msg);
+
+			alphaGroupObj.transform.FindChild("alpha_1").gameObject.SetActive(true);
+			betaGroupObj.transform.FindChild("beta_1").gameObject.SetActive(true);
+			if (roomCapacity >= 4) {
+				alphaGroupObj.transform.FindChild("alpha_2").gameObject.SetActive(true);
+				betaGroupObj.transform.FindChild("beta_2").gameObject.SetActive(true);
+			}
+			if (roomCapacity >= 6) {
+				alphaGroupObj.transform.FindChild("alpha_3").gameObject.SetActive(true);
+				betaGroupObj.transform.FindChild("beta_3").gameObject.SetActive(true);
+			}
+
+			GameObject heroSlot = null;
+			if (team == GameManager.team.ALPHA) {
+				heroSlot = alphaGroupObj.transform.FindChild("alpha_" + teamSeedNumber).gameObject;
+			} else {
+				heroSlot = betaGroupObj.transform.FindChild("beta_" + teamSeedNumber).gameObject;
+			}
+			heroSpriteObj = heroSlot.transform.FindChild("hero_sprite").gameObject;
+			heroNameObj = heroSlot.transform.FindChild("hero_name").gameObject;
+
+			string msg = team + ":" + userName + "::" + teamSeedNumber;
+			GetComponent<PhotonView> ().RPC ("UpdateHeroSelection", PhotonTargets.AllBuffered, msg);
+
+			if (PhotonNetwork.isMasterClient && numPlayersInRoom == roomCapacity) {
+				buttonStartGame.GetComponent<UIButton>().isEnabled = false;
+			}
+
 		}
 	}
 
@@ -227,41 +297,44 @@ public class LobbyManager : MonoBehaviour {
     public void UpdateHeroSelection(string txtInfo)
     {
         string[] infoList = txtInfo.Split(':');
-        string team = infoList[0];
-        string heroName = infoList[1];
+        string _team = infoList[0];
+		string _playerName = infoList[1];
+        string _heroName = infoList[2];
+		int _seedNumber = System.Int32.Parse(infoList[3]);
+        
+		Debug.Log(_team + ":" + _heroName + ":" + _playerName + ":" + _seedNumber);
 
-        Debug.Log(team + ":" + heroName);
-        if (team == "ALPHA")
+		GameObject heroSlot = null;
+
+        if (_team == "ALPHA")
         {
-            alphaHeroSprite.GetComponent<UISprite>().spriteName = heroName;
+			heroSlot = alphaGroupObj.transform.FindChild("alpha_" + _seedNumber).gameObject;
         }
         else
         {
-            betaHeroSprite.GetComponent<UISprite>().spriteName = heroName;
+			heroSlot = betaGroupObj.transform.FindChild("beta_" + _seedNumber).gameObject;
         }
 
+		heroSpriteObj = heroSlot.transform.FindChild("hero_sprite").gameObject;
+		heroNameObj = heroSlot.transform.FindChild("hero_name").gameObject;
+
+		heroSpriteObj.GetComponent<UISprite>().spriteName = _heroName;
+		heroNameObj.GetComponent<UILabel>().text = _playerName;
+
+		if (PhotonNetwork.isMasterClient) {
+
+
+		}
+		/*
         if (alphaHeroSprite.GetComponent<UISprite>().spriteName != "select_hero" &&
             betaHeroSprite.GetComponent<UISprite>().spriteName != "select_hero")
         {
             buttonStartGame.GetComponent<UIButton>().isEnabled = true;
         }
+        */
     }
 
-    [PunRPC]
-	public void JoinPlayerInfo(string txtInfo) {
-
-		string[] infoList = txtInfo.Split (':');
-		string team = infoList [0];
-		string playerName = infoList [1];
-
-		if (team == "ALPHA") {
-			alphaHeroNameLabel.GetComponent<UILabel> ().text = playerName;
-		} else {
-			betaHeroNameLabel.GetComponent<UILabel> ().text = playerName;
-		}
-
-	}
-
+	/*
 	[PunRPC]
 	public void ExitPlayerInfo(string txtInfo) {
 		
@@ -280,21 +353,45 @@ public class LobbyManager : MonoBehaviour {
         buttonStartGame.GetComponent<UIButton>().isEnabled = false;
 
     }
+*/
 
     [PunRPC]
-    public void RealStartGame()
+    public void OnStartGame()
     {
-        PlayerPrefs.SetString("userName", userName);
-        PlayerPrefs.SetString("heroName", heroName);
-        PlayerPrefs.SetInt("userTeam", (int)team);
+		buttonStartGame.SetActive (false);
+		buttonReady.SetActive (true);
+		buttonReady.GetComponent<UIButton>().isEnabled = false;
+		heroSelectView.GetComponent<UIScrollView>().enabled = false;
+		selectionStarted = true;
+		currentSeedNumber = 1;
 
-        //Application.LoadLevel("scene_main");
-        //PhotonNetwork.automaticallySyncScene = true;
-        PhotonNetwork.LoadLevel("scene_main");
+		checkMyTurn();
     }
 
-    // Update is called once per frame
-    void Update () {
+	[PunRPC]
+	public void checkMyTurn()
+	{
+		selectionTimer = 10.0f;
+
+		if (currentSeedNumber == globalSeedNumber) {
+			buttonReady.GetComponent<UIButton>().isEnabled = true;	
+			heroSelectView.GetComponent<UIScrollView>().enabled = true;
+		}
+	}
+
+	public void RealStartGame()
+	{
+		PlayerPrefs.SetString("userName", userName);
+		PlayerPrefs.SetString("heroName", heroName);
+		PlayerPrefs.SetInt("userTeam", (int)team);
+		
+		//Application.LoadLevel("scene_main");
+		//PhotonNetwork.automaticallySyncScene = true;
+		PhotonNetwork.LoadLevel("scene_main");
+
+	}
+
+    void FixedUpdate () {
 	
 	}
 }

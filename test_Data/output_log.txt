@@ -23,7 +23,7 @@ Loading C:\Users\Naver.AD010\Documents\Unity Projects\Test\test_Data\Managed\Pho
 Platform assembly: C:\Users\Naver.AD010\Documents\Unity Projects\Test\test_Data\Managed\CoherentNoise.dll (this message is harmless)
 Loading C:\Users\Naver.AD010\Documents\Unity Projects\Test\test_Data\Managed\CoherentNoise.dll into Unity Child Domain
 Platform assembly: C:\Users\Naver.AD010\Documents\Unity Projects\Test\test_Data\Managed\System.Core.dll (this message is harmless)
-- Completed reload, in  0.101 seconds
+- Completed reload, in  0.094 seconds
 desktop: 1920x1200 60Hz; virtual: 3840x1200 at 0,0
 <RI> Initializing input.
 XInput1_3.dll not found. Trying XInput9_1_0.dll instead...
@@ -31,15 +31,9 @@ XInput1_3.dll not found. Trying XInput9_1_0.dll instead...
 <RI> Initialized touch support.
 Platform assembly: C:\Users\Naver.AD010\Documents\Unity Projects\Test\test_Data\Managed\System.dll (this message is harmless)
 Setting up 2 worker threads for Enlighten.
-  Thread -> id: 2fcc -> priority: 1 
-  Thread -> id: 15b4 -> priority: 1 
-Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 5.516887 ms
-
-Unloading 99 unused Assets to reduce memory usage. Loaded Objects now: 803.
-Total: 3.259059 ms (FindLiveObjects: 0.091158 ms CreateObjectMapping: 0.084215 ms MarkObjects: 2.218889 ms  DeleteObjects: 0.864192 ms)
-
-UserId sent: aaa
+  Thread -> id: 2a8c -> priority: 1 
+  Thread -> id: 33f0 -> priority: 1 
+UserId sent: aaaa
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
 
@@ -51,7 +45,39 @@ OnReceivedRoomListUpdate
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
 
-Cannot send RPCs in Lobby! RPC dropped.
+OnCreatedRoom
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
+
+OnJoinedRoom
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
+
+ALPHA::aaaa:1
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
+
+BETA::aaaa:1
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
+
+BETA:SwordMaster:aaaa:2
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
+
+BETA:Akai:aaaa:2
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
+
+BETA:Ganfaul:aaaa:2
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
+
+BETA:Akai:aaaa:2
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
+
+BETA:SwordMaster:aaaa:2
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 64)
 

@@ -20,6 +20,11 @@ public class ButtonClickHandler : MonoBehaviour {
 		lm.GetComponent<LobbyManager> ().CreateGame ();
 	}
 
+	public void OnCreateRoomButtonClick()
+	{
+		lm.GetComponent<LobbyManager> ().CreateRoom ();
+	}
+
 	public void OnJoinGameButtonClick()
 	{
 		lm.GetComponent<LobbyManager> ().JoinGame ();
@@ -35,7 +40,7 @@ public class ButtonClickHandler : MonoBehaviour {
 	public void OnHeroButtonClick(string name)
 	{
         //Debug.Log(name + "clicked!!");
-		lm.GetComponent<LobbyManager>().SelectHero(name);
+		lm.GetComponent<LobbyManager>().OnSelectHero(name);
 	}
 
 	public void OnStartGameButtonClick()
