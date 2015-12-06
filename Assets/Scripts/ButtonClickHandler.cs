@@ -34,7 +34,11 @@ public class ButtonClickHandler : MonoBehaviour {
 	{
 		string roomName = roomInfo.GetComponent<UILabel>().text;
 		lm.GetComponent<LobbyManager> ().SetRoomSelected(roomName);
+	}
 
+	public void OnReadyButtonClick()
+	{
+		lm.GetComponent<LobbyManager>().OnReadyGame();
 	}
 
 	public void OnHeroButtonClick(string name)
@@ -46,8 +50,12 @@ public class ButtonClickHandler : MonoBehaviour {
 	public void OnStartGameButtonClick()
 	{
 		lm.GetComponent<LobbyManager> ().StartGame ();
-
     }
+
+	public void OnCreateRoomDlgClose()
+	{
+		lm.GetComponent<LobbyManager> ().OnCreateRoomDlgClose ();
+	}
 
 	public void OnExitRoomClick()
 	{

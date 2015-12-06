@@ -20,6 +20,8 @@ public class LobbyManager : MonoBehaviour {
 	public GameObject buttonCreateRoom;
 	public GameObject createRoomDlg;
 
+	public GameObject heroSlotGrid;
+
 	public GameObject inputRoomName;
 	public GameObject selectRoomCapacity;
 
@@ -39,12 +41,14 @@ public class LobbyManager : MonoBehaviour {
 	public GameObject heroSelectView;
 
 	public bool selectionStarted;
-
+	public bool selectionComplete;
 	public float selectionTimer;
 
 	public GameObject chatInputRoom;
 	public UILabel chatLabel;
 	public GameObject chatAreaRoom;
+
+	public GameObject selectHeroLabel;
 
 	bool connecting;
 
@@ -53,24 +57,17 @@ public class LobbyManager : MonoBehaviour {
 	int roomCapacity;
 	int roomPlayerCnt;
 
+	float updateCheckInterval = 1.0f;
+	float updateCheckTimer = 0;
+
+	float selectHeroInterval = 5.0f;
+	float selectHeroTimer = 0;
+	float selectHeroTimeRemaining;
+
 	// Use this for initialization
 	void Start () {
 		selectionStarted = false;
-
-		/*
-		for (int i=0; i < 15; i++) {
-			GameObject roomInfo = Instantiate(roomPrefab) as GameObject;
-			
-			GameObject label = roomInfo.transform.FindChild("roomName").gameObject;		
-			label.GetComponent<UILabel>().text = "room" + i;
-			GameObject numPlayer = roomInfo.transform.FindChild("numPlayer").gameObject;		
-			numPlayer.GetComponent<UILabel>().text =  i + "/4";
-
-			NGUITools.AddChild(tableRoom, roomInfo);
-			
-			tableRoom.GetComponent<UITable>().Reposition();
-		}
-*/
+		selectionComplete = false;
 		Connect ();
 	}
 
@@ -136,20 +133,59 @@ public class LobbyManager : MonoBehaviour {
 		selectedRoomName = roomName;
         buttonJoinGame.GetComponent<UIButton>().isEnabled = true;
     }
-	
+
+	public void SelectRandomHero() {
+		int heroCnt = heroSlotGrid.transform.childCount;
+		for (int i=0; i < heroCnt; i++) {
+			GameObject _slot = heroSlotGrid.transform.GetChild (i).gameObject;
+
+			if (_slot.GetComponent<UIButton>().isEnabled == false)
+				continue;
+
+			string _heroName = _slot.transform.FindChild("hero_name").GetComponent<UILabel>().text;
+			OnSelectHero(_heroName);
+			break;
+		}
+
+
+	}
+
+	public void DisableHeroSelection(string name) {
+
+		int heroCnt = heroSlotGrid.transform.childCount;
+		for (int i=0; i < heroCnt; i++) {
+			GameObject _slot = heroSlotGrid.transform.GetChild (i).gameObject;
+			string _heroName = _slot.transform.FindChild("hero_name").GetComponent<UILabel>().text;
+
+			if (name == _heroName) {
+				_slot.GetComponent<UIButton>().isEnabled = false;
+				break;
+			}
+		}
+	}
+
 	public void OnSelectHero(string name) {
 		heroName = name;
 
-		heroSpriteObj.GetComponent<UISprite> ().spriteName = name;
-		heroNameObj.GetComponent<UILabel>().text = userName;
-
-        string msg = team + ":" + userName + ":" + heroName + ":" + globalSeedNumber;
+        string msg = team + ":" + userName + ":" + heroName + ":" + teamSeedNumber;
         GetComponent<PhotonView>().RPC("UpdateHeroSelection", PhotonTargets.AllBuffered, msg);
     }
-	
+
+	public void OnReadyGame() {
+		selectHeroLabel.SetActive (false);
+		buttonReady.SetActive (false);
+
+		string msg = team + ":" + userName + ":" + heroName + ":" + (globalSeedNumber+1);
+		GetComponent<PhotonView>().RPC("NotifyReady", PhotonTargets.AllBuffered, msg);
+	}
+
+	public void OnCreateRoomDlgClose() {
+		createRoomDlg.SetActive (false);
+	}
+
 	public void ExitRoom(){
 		string msg = team + ":::" + teamSeedNumber;
-		GetComponent<PhotonView> ().RPC ("UpdateHeroSelection", PhotonTargets.AllBuffered, msg);
+		GetComponent<PhotonView> ().RPC ("UpdateHeroSelection", PhotonTargets.Others, msg);
 
 		//GetComponent<PhotonView> ().RPC ("ExitPlayerInfo", PhotonTargets.Others, msg);
 
@@ -280,11 +316,6 @@ public class LobbyManager : MonoBehaviour {
 
 			string msg = team + ":" + userName + "::" + teamSeedNumber;
 			GetComponent<PhotonView> ().RPC ("UpdateHeroSelection", PhotonTargets.AllBuffered, msg);
-
-			if (PhotonNetwork.isMasterClient && numPlayersInRoom == roomCapacity) {
-				buttonStartGame.GetComponent<UIButton>().isEnabled = false;
-			}
-
 		}
 	}
 
@@ -293,7 +324,24 @@ public class LobbyManager : MonoBehaviour {
 		chatAreaRoom.GetComponent<UITextList> ().Add (chatMessage);
 	}
 
-    [PunRPC]
+	[PunRPC]
+	public void NotifyReady(string txtInfo) {
+		string[] infoList = txtInfo.Split(':');
+		string _team = infoList[0];
+		string _playerName = infoList[1];
+		string _heroName = infoList[2];
+		int _nextseedNumber = System.Int32.Parse(infoList[3]);
+
+		Debug.Log(_team + ":" + _heroName + ":" + _playerName + ":" + _nextseedNumber);
+
+		currentSeedNumber = _nextseedNumber;
+		selectHeroTimeRemaining = selectHeroInterval;
+
+		DisableHeroSelection(_heroName);
+		checkMyTurn ();
+	}
+	
+	[PunRPC]
     public void UpdateHeroSelection(string txtInfo)
     {
         string[] infoList = txtInfo.Split(':');
@@ -320,40 +368,7 @@ public class LobbyManager : MonoBehaviour {
 
 		heroSpriteObj.GetComponent<UISprite>().spriteName = _heroName;
 		heroNameObj.GetComponent<UILabel>().text = _playerName;
-
-		if (PhotonNetwork.isMasterClient) {
-
-
-		}
-		/*
-        if (alphaHeroSprite.GetComponent<UISprite>().spriteName != "select_hero" &&
-            betaHeroSprite.GetComponent<UISprite>().spriteName != "select_hero")
-        {
-            buttonStartGame.GetComponent<UIButton>().isEnabled = true;
-        }
-        */
     }
-
-	/*
-	[PunRPC]
-	public void ExitPlayerInfo(string txtInfo) {
-		
-		string[] infoList = txtInfo.Split (':');
-		string team = infoList [0];
-		string playerName = infoList [1];
-		
-		if (team == "ALPHA") {
-			alphaHeroNameLabel.GetComponent<UILabel> ().text = "";
-            alphaHeroSprite.GetComponent<UISprite>().spriteName = "select_hero";
-        } else {
-			betaHeroNameLabel.GetComponent<UILabel> ().text = "";
-            betaHeroSprite.GetComponent<UISprite>().spriteName = "select_hero";
-        }
-
-        buttonStartGame.GetComponent<UIButton>().isEnabled = false;
-
-    }
-*/
 
     [PunRPC]
     public void OnStartGame()
@@ -367,31 +382,84 @@ public class LobbyManager : MonoBehaviour {
 
 		checkMyTurn();
     }
-
-	[PunRPC]
+	
 	public void checkMyTurn()
 	{
-		selectionTimer = 10.0f;
+		selectHeroTimeRemaining = selectHeroInterval;
 
 		if (currentSeedNumber == globalSeedNumber) {
-			buttonReady.GetComponent<UIButton>().isEnabled = true;	
+			buttonReady.GetComponent<UIButton>().isEnabled = true;
 			heroSelectView.GetComponent<UIScrollView>().enabled = true;
+			selectHeroLabel.SetActive(true);
+		}
+
+		if (currentSeedNumber > roomCapacity) {
+			if (PhotonNetwork.isMasterClient) {
+				GetComponent<PhotonView> ().RPC ("OnSelectionComplete", PhotonTargets.AllBuffered);
+			}
 		}
 	}
 
-	public void RealStartGame()
+	[PunRPC]
+	public void OnSelectionComplete()
 	{
+		selectionComplete = true;
+		selectHeroTimeRemaining = selectHeroInterval;
+		selectHeroTimer = 0;
+		selectHeroLabel.SetActive(true);
+	}
+
+	[PunRPC]
+	public void RealStartGame()
+	{	
+		Debug.Log ("RealStartGame()");
 		PlayerPrefs.SetString("userName", userName);
 		PlayerPrefs.SetString("heroName", heroName);
 		PlayerPrefs.SetInt("userTeam", (int)team);
 		
-		//Application.LoadLevel("scene_main");
+		Application.LoadLevel("scene_main");
 		//PhotonNetwork.automaticallySyncScene = true;
-		PhotonNetwork.LoadLevel("scene_main");
+		//PhotonNetwork.LoadLevel("scene_main");
 
 	}
 
-    void FixedUpdate () {
-	
+    public void Update () {
+
+		updateCheckTimer += Time.deltaTime;
+		if (updateCheckTimer >= updateCheckInterval) {
+			if (PhotonNetwork.isMasterClient) {
+				roomPlayerCnt = PhotonNetwork.playerList.Length;
+
+				if (roomPlayerCnt == roomCapacity) {
+					buttonStartGame.GetComponent<UIButton>().isEnabled = true;
+				} else {
+					buttonStartGame.GetComponent<UIButton>().isEnabled = false;
+				}
+
+			}
+			updateCheckTimer = 0;
+		}
+
+		selectHeroTimer += Time.deltaTime;
+		if (selectHeroTimer >= 1.0f) {
+			selectHeroTimeRemaining--;
+			selectHeroTimer = 0;
+		}
+
+		if (selectionComplete) {
+			selectHeroLabel.GetComponent<UILabel>().text = "Game starts in " + selectHeroTimeRemaining + " seconds";
+			if (selectHeroTimeRemaining <= 0) {
+				GetComponent<PhotonView> ().RPC ("RealStartGame", PhotonTargets.AllBuffered);
+			}
+		} else if (selectionStarted) {
+			if (currentSeedNumber == globalSeedNumber) {
+				if (selectHeroTimeRemaining > 0) {
+					selectHeroLabel.GetComponent<UILabel>().text = "Select your hero in " + selectHeroTimeRemaining + " seconds";
+				} else {
+					SelectRandomHero();
+					OnReadyGame();
+				}
+			}
+		}
 	}
 }

@@ -221,20 +221,16 @@ public class UIManager : MonoBehaviour {
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);
 
         //for DEBUG 
-        /*
+      /*  
         {
             string txt = "";
-            GameObject[] _playersInGame = GameObject.FindGameObjectsWithTag("Player");
-            foreach (GameObject networkplayer in _playersInGame)
-            {
-                object[] data = networkplayer.GetComponent<PhotonView>().instantiationData;
-                txt += (string)data[0];
-            }
+
+			txt = PlayerPrefs.GetString ("userName") + "," + PlayerPrefs.GetString ("heroName") + "," + PlayerPrefs.GetInt ("userTeam");
 
             GUIStyle stl = new GUIStyle();
             stl.fontSize = 15;
             stl.fontStyle = FontStyle.Bold;
-            GUI.Label(new Rect(300, 100, 200, 50), _playersInGame.Length + "," + txt, stl);
+            GUI.Label(new Rect(300, 100, 200, 50),  txt, stl);
         }
         */
 		DisplayElapsedTimeText();

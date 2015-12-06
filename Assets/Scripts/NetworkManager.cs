@@ -17,12 +17,18 @@ public class NetworkManager : MonoBehaviour {
         guiScale.x = (float)Screen.width / (float)originalWidth; // calculate hor scale
         guiScale.y = (float)Screen.height / (float)originalHeight; // calculate vert scale
         guiScale.z = 1.0f;
+
+		//Debug.Log (PlayerPrefs.GetString ("userName") + "#" + PlayerPrefs.GetString ("heroName") + "#" + PlayerPrefs.GetInt ("userTeam"));
+
+		selectedHeroName = PlayerPrefs.GetString ("heroName");
+		selectedTeam = (GameManager.team)PlayerPrefs.GetInt ("userTeam");
+		gameObject.GetComponent<GameManager>().gameStart();
     }
 
 	void OnDestroy() {
 	}
 
-	
+/*
 	void Connect(string heroName, GameManager.team team) {
 
         PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
@@ -53,10 +59,11 @@ public class NetworkManager : MonoBehaviour {
 
         gameObject.GetComponent<GameManager>().gameStart();
 	}
-
+*/
 
 	void OnGUI()
     {
+		/*
 		if(PhotonNetwork.connected == false && connecting == false ) {
            
             Matrix4x4 saveMat = GUI.matrix;
@@ -96,14 +103,12 @@ public class NetworkManager : MonoBehaviour {
 
             GUI.matrix = saveMat;
         }
-		
+		*/
 
 	}
 		
 	// Update is called once per frame
 	void Update () {
-		if (PhotonNetwork.connected) {
 
-		}
 	}
 }
