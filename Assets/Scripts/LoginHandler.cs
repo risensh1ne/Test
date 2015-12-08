@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using SimpleJSON;
 
 public class LoginHandler : MonoBehaviour {
 
@@ -69,10 +70,12 @@ public class LoginHandler : MonoBehaviour {
 			return;
 		}
 
-		PlayerPrefs.SetString("userID", input_id);
-		PlayerPrefs.SetString("userName", input_id);
+		WWWForm form = new WWWForm();
+		form.AddField("id", input_id);
+		form.AddField("pass", input_pass);
+		WWW www = new WWW("http://risenshine-games.pe.kr/login_user.php", form);
+		StartCoroutine(CheckLoginResponse(www));
 
-		Application.LoadLevel ("lobby");
 	}
 
 	public void OnJoinButtonClicked()
@@ -99,6 +102,55 @@ public class LoginHandler : MonoBehaviour {
 			MessageBox("패스워드 확인이 일치하지 않습니다.");
 			return;
 		}	
+
+		WWWForm form = new WWWForm();
+		form.AddField("id", input_id);
+		form.AddField("pass", input_pass);
+		form.AddField("name", input_id);
+		form.AddField("email", "");
+		WWW www = new WWW("http://risenshine-games.pe.kr/register_user.php", form);
+		StartCoroutine(CheckRegisterResponse(www));
+	}
+
+	IEnumerator CheckRegisterResponse(WWW www)
+	{
+		yield return www;
+
+		if (www.error == null)
+		{
+			Debug.Log("WWW Ok!: " + www.text);
+		} else {
+			Debug.Log("WWW Error: "+ www.error);
+		}    
+	}
+
+	IEnumerator CheckLoginResponse(WWW www)
+	{
+		yield return www;
+		
+		if (www.error == null)
+		{
+			Debug.Log("WWW Ok!: " + www.text);
+
+			JSONNode node = JSON.Parse (www.text);
+
+			Debug.Log (node["data"]);
+
+			if (node["data"] != null) {
+
+				PlayerPrefs.SetString("userID", node["data"]["id"]);
+				PlayerPrefs.SetString("userName", node["data"]["name"]);
+				PlayerPrefs.SetString("userLevel", node["data"]["level"]);
+				PlayerPrefs.SetString("userCash", node["data"]["cash"]);
+
+				Application.LoadLevel ("lobby");
+			} else {
+				MessageBox("로그인 정보를 찾을 수 없습니다.");
+			}
+
+		} else {
+			Debug.Log("WWW Error: "+ www.error);
+		}    
 	}
 
 	public void OnBackButtonCliked()

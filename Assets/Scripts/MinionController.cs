@@ -181,8 +181,9 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
 			if (targetEnemy.tag == "Player" || targetEnemy.tag == "minion" || targetEnemy.tag == "defender" ) {
 				IPlayer ip = targetEnemy.GetComponent<IPlayer>();
 				if (!ip.isDead) {
+					ip.damage(10.0f);
 					//targetEnemy.GetComponent<PhotonView> ().RPC ("DamageSync", PhotonTargets.All, 10.0f);
-					targetEnemy.GetComponent<MinionController>().damage(10.0f);
+					//targetEnemy.GetComponent<MinionController>().damage(10.0f);
 				}
 			}
 		}

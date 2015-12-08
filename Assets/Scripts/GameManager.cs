@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour {
 		nextSpawnRemaining = spawnPeriod;
 
         //TestConnect();
-		gameStart ();
+		//gameStart ();
 	}
 
 
@@ -74,7 +74,7 @@ public class GameManager : MonoBehaviour {
         myHeroName = PlayerPrefs.GetString("heroName");
         myTeam = (GameManager.team)PlayerPrefs.GetInt("userTeam");
         
-		Debug.Log (userName + "," + myHeroName + "," + myTeam);
+		//Debug.Log ("------>" + userName + "," + myHeroName + "," + myTeam);
 
         GameObject obj = SpawnHero();
 

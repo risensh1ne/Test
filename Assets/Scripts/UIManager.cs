@@ -98,7 +98,11 @@ public class UIManager : MonoBehaviour {
 			skill1_btn.GetComponent<Image> ().sprite = skillIcons [2];
 			skill2_btn.GetComponent<Image> ().sprite = skillIcons [1];
 			skill3_btn.GetComponent<Image> ().sprite = skillIcons [0];
-        }
+		} else if (myHeroName == "Akai") { 
+			skill1_btn.GetComponent<Image> ().sprite = skillIcons [2];
+			skill2_btn.GetComponent<Image> ().sprite = skillIcons [1];
+			skill3_btn.GetComponent<Image> ().sprite = skillIcons [0];
+		}
         myteamHeroTexture = heroIcons[getHeroIconIndex(myHeroName)].texture; 
     }
 	
@@ -109,6 +113,8 @@ public class UIManager : MonoBehaviour {
             idx = 0;
         else if (heroName == "SwordMaster")
             idx = 1;
+		else if (heroName == "Akai")
+			idx = 2;
 
         return idx;
     }
@@ -235,7 +241,7 @@ public class UIManager : MonoBehaviour {
         */
 		DisplayElapsedTimeText();
 
-
+		/*
         GameObject[] playersInGame = GameObject.FindGameObjectsWithTag("Player");
 
         foreach (GameObject networkplayer in playersInGame)
@@ -244,7 +250,7 @@ public class UIManager : MonoBehaviour {
             string heroName = (string)data[0];
             GameManager.team _team = (GameManager.team)data[1];
 
-            //Debug.Log(heroName + "," + _team.ToString() + "," + myTeam.ToString());
+            Debug.Log(heroName + "," + _team.ToString() + "," + myTeam.ToString());
             if (_team != myTeam) {
                 enemyteamHeroTexture = heroIcons[getHeroIconIndex(heroName)].texture;
 				enemyHeroObj = networkplayer;
@@ -276,6 +282,7 @@ public class UIManager : MonoBehaviour {
 				GUI.Label(new Rect(originalWidth - 65, 100, 100, 20), "Respawning", gStyle);
             }
         }
+		*/
 
         GUI.matrix = saveMat;
 	}

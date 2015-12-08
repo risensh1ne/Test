@@ -19,16 +19,17 @@ public class NetworkManager : MonoBehaviour {
         guiScale.z = 1.0f;
 
 		//Debug.Log (PlayerPrefs.GetString ("userName") + "#" + PlayerPrefs.GetString ("heroName") + "#" + PlayerPrefs.GetInt ("userTeam"));
-
+		/*
 		selectedHeroName = PlayerPrefs.GetString ("heroName");
 		selectedTeam = (GameManager.team)PlayerPrefs.GetInt ("userTeam");
 		gameObject.GetComponent<GameManager>().gameStart();
+		*/
+
     }
 
 	void OnDestroy() {
 	}
 
-/*
 	void Connect(string heroName, GameManager.team team) {
 
         PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
@@ -59,11 +60,10 @@ public class NetworkManager : MonoBehaviour {
 
         gameObject.GetComponent<GameManager>().gameStart();
 	}
-*/
+
 
 	void OnGUI()
     {
-		/*
 		if(PhotonNetwork.connected == false && connecting == false ) {
            
             Matrix4x4 saveMat = GUI.matrix;
@@ -84,10 +84,10 @@ public class NetworkManager : MonoBehaviour {
 			PhotonNetwork.player.name = GUILayout.TextField(PhotonNetwork.player.name);
 			GUILayout.EndHorizontal();
 			
-			if( GUILayout.Button("Gion") ) {
+			if( GUILayout.Button("Akai") ) {
 				connecting = true;
 				//PhotonNetwork.offlineMode = true;
-				Connect ("Gion", GameManager.team.BETA);
+				Connect ("Akai", GameManager.team.BETA);
 			}
 			
 			if( GUILayout.Button("Sword Master") ) {
@@ -103,7 +103,7 @@ public class NetworkManager : MonoBehaviour {
 
             GUI.matrix = saveMat;
         }
-		*/
+
 
 	}
 		

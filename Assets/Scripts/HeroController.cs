@@ -557,10 +557,10 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 						if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
 							changeStateTo (CharacterState.STATE_ATTACKING);
 						} else {
+							changeStateTo (CharacterState.STATE_MOVING);
 							Vector3 direction = (targetEnemy.transform.position - transform.position).normalized;
 							transform.position += direction * moveSpeed * Time.fixedDeltaTime;
 							transform.rotation = Quaternion.LookRotation (direction);	
-							changeStateTo (CharacterState.STATE_MOVING);
 						}
 					} else {
 						changeStateTo (CharacterState.STATE_IDLE);
@@ -586,6 +586,27 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 				targetEnemy.GetComponent<PhotonView> ().RPC ("DamageSync", PhotonTargets.All, damage);
 			}
 		}
+	}
+
+	void OnNormalAttack()
+	{
+		if (targetEnemy == null)
+			return;
+
+		float distance = Vector3.Distance (transform.position, targetEnemy.transform.position);
+		if (distance < attackRange) {
+			IPlayer ip = targetEnemy.GetComponent<IPlayer> ();
+			if (!ip.isDead) {
+				DamageEnemy (40.0f);
+			}
+		} else {
+			changeStateTo(CharacterState.STATE_IDLE);
+		}
+	}
+
+	void OnNormalAttackEnd()
+	{
+		changeStateTo(CharacterState.STATE_IDLE);
 	}
 
 	void Skill1Damage()
@@ -723,16 +744,6 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		manaRegenRate = origManaRegenRate;
 		ObjectPool.instance.PoolObject (obj);
 
-	}
-
-	void OnNormalAttack()
-	{
-		if (targetEnemy == null)
-			return;
-
-		float distance = Vector3.Distance (transform.position, targetEnemy.transform.position);
-		if (distance < attackRange)
-			DamageEnemy (40.0f);
 	}
 
 	void OnGUI()
