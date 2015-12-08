@@ -140,8 +140,8 @@ public class LoginHandler : MonoBehaviour {
 
 				PlayerPrefs.SetString("userID", node["data"]["id"]);
 				PlayerPrefs.SetString("userName", node["data"]["name"]);
-				PlayerPrefs.SetString("userLevel", node["data"]["level"]);
-				PlayerPrefs.SetString("userCash", node["data"]["cash"]);
+				PlayerPrefs.SetInt("userLevel", System.Int32.Parse(node["data"]["level"]));
+				PlayerPrefs.SetInt("userCash", System.Int32.Parse(node["data"]["cash"]));
 
 				Application.LoadLevel ("lobby");
 			} else {

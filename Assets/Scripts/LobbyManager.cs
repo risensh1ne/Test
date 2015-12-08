@@ -5,6 +5,9 @@ public class LobbyManager : MonoBehaviour {
 
 	string userName;
 	string userID;
+	int userLevel;
+	int userCash;
+
 	public string heroName;
 
 	public int teamSeedNumber;
@@ -30,6 +33,9 @@ public class LobbyManager : MonoBehaviour {
 	public GameObject roomCtrl;
 	public GameObject tableRoom;
 	public GameObject roomPrefab;
+
+	public GameObject tablePlayer;
+	public GameObject playerInfoPrefab;
 
 	public Sprite[] heroSprites;
 
@@ -64,8 +70,13 @@ public class LobbyManager : MonoBehaviour {
 	float selectHeroTimer = 0;
 	float selectHeroTimeRemaining;
 
+	float updateLobbyInterval = 5.0f;
+	float updateLobbyTimer = 0;
+
 	// Use this for initialization
 	void Start () {
+		updateLobbyTimer = 0;
+
 		selectionStarted = false;
 		selectionComplete = false;
 		Connect ();
@@ -75,6 +86,9 @@ public class LobbyManager : MonoBehaviour {
 
 		userID = PlayerPrefs.GetString("userID");
 		userName = PlayerPrefs.GetString("userName");
+		userLevel = PlayerPrefs.GetInt ("userLevel");
+		userCash = PlayerPrefs.GetInt ("userCash");
+
 
 		PhotonNetwork.player.name = userName;
 		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
@@ -146,8 +160,6 @@ public class LobbyManager : MonoBehaviour {
 			OnSelectHero(_heroName);
 			break;
 		}
-
-
 	}
 
 	public void DisableHeroSelection(string name) {
@@ -206,6 +218,10 @@ public class LobbyManager : MonoBehaviour {
 
         buttonJoinGame.GetComponent<UIButton>().isEnabled = false;
         selectedRoomName = "";
+	
+		PhotonNetwork.player.customProperties.Add ("id", userID);
+
+		UpdatePlayerList();
 	}
 	
 	public void OnChat(string chatText) {
@@ -214,6 +230,48 @@ public class LobbyManager : MonoBehaviour {
 
 		string chatMessage = "[" + userName + "] " + chatText;
 		GetComponent<PhotonView> ().RPC ("SendChatMessage", PhotonTargets.AllBuffered, chatMessage);
+	}
+
+	void UpdatePlayerList() {
+		Debug.Log ("UpdatePlayerList");
+		if (PhotonNetwork.insideLobby) {
+
+			int childCount = tablePlayer.transform.childCount;
+			if (childCount > 0) {
+				for (int i = childCount - 1; i >= 0; i--)
+				{
+					Transform childTransform = tablePlayer.transform.GetChild(i);
+					if (childTransform == null)
+						continue;
+					
+					GameObject child = childTransform.gameObject;
+					if (child == null)
+						continue;
+					
+					NGUITools.DestroyImmediate(child);
+				}
+			}
+
+			Debug.Log ("-->" + PhotonNetwork.countOfPlayers + "," + PhotonNetwork.otherPlayers.Length);
+
+			foreach (PhotonPlayer player in PhotonNetwork.playerList ) {
+
+				GameObject playerInfo = Instantiate(playerInfoPrefab) as GameObject;
+				
+				GameObject labelPlayerId = playerInfo.transform.FindChild("player_id").gameObject;		
+				labelPlayerId.GetComponent<UILabel>().text = player.customProperties["id"].ToString();
+				GameObject labelPlayerLevel = playerInfo.transform.FindChild("player_level").gameObject;		
+				labelPlayerLevel.GetComponent<UILabel>().text = "222";
+				GameObject labelPlayerStats = playerInfo.transform.FindChild("player_stats").gameObject;		
+				labelPlayerStats.GetComponent<UILabel>().text = "10/7";
+				GameObject labelPlayerState = playerInfo.transform.FindChild("player_state").gameObject;		
+				labelPlayerState.GetComponent<UILabel>().text = "로비";
+				
+				NGUITools.AddChild(tablePlayer, playerInfo);
+				
+				tablePlayer.GetComponent<UITable>().Reposition();
+			}
+		}
 	}
 
 	void OnReceivedRoomListUpdate() {
@@ -460,6 +518,12 @@ public class LobbyManager : MonoBehaviour {
 					OnReadyGame();
 				}
 			}
+		}
+
+		updateLobbyTimer += Time.deltaTime;
+		if (updateLobbyTimer >= updateLobbyInterval) {
+			UpdatePlayerList();
+			updateLobbyTimer = 0;
 		}
 	}
 }
