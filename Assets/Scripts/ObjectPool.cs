@@ -121,6 +121,7 @@ public class ObjectPool : MonoBehaviour
 	{
 		for ( int i=0; i<objectPrefabs.Length; i++)
 		{
+			Debug.Log (obj.name);
 			if(objectPrefabs[i].name == obj.name)
 			{
 				obj.SetActiveRecursively(false);

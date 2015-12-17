@@ -118,9 +118,19 @@ public class LoginHandler : MonoBehaviour {
 
 		if (www.error == null)
 		{
-			Debug.Log("WWW Ok!: " + www.text);
+			JSONNode node = JSON.Parse (www.text);
+			Debug.Log (node);
+			if (node["result"].Value == "success") {
+				OnBackButtonCliked();
+				MessageBox("성공적으로 등록하였습니다. 로그인 하세요.");
+			} else {
+				if (node["errno"].Value == "1062")
+					MessageBox("아이디가 이미 존재합니다.");
+				else
+					MessageBox("등록에 실패 하였습니다.");
+			}
 		} else {
-			Debug.Log("WWW Error: "+ www.error);
+			MessageBox("등록에 실패 하였습니다.");
 		}    
 	}
 
@@ -130,18 +140,18 @@ public class LoginHandler : MonoBehaviour {
 		
 		if (www.error == null)
 		{
-			Debug.Log("WWW Ok!: " + www.text);
-
 			JSONNode node = JSON.Parse (www.text);
+			Debug.Log (node);
 
-			Debug.Log (node["data"]);
+			if (node["data"].Value != null) {
 
-			if (node["data"] != null) {
-
-				PlayerPrefs.SetString("userID", node["data"]["id"]);
-				PlayerPrefs.SetString("userName", node["data"]["name"]);
-				PlayerPrefs.SetInt("userLevel", System.Int32.Parse(node["data"]["level"]));
-				PlayerPrefs.SetInt("userCash", System.Int32.Parse(node["data"]["cash"]));
+				PlayerPrefs.SetString("userID", node["data"]["id"].Value);
+				PlayerPrefs.SetString("userName", node["data"]["name"].Value);
+				PlayerPrefs.SetInt("userWin", System.Int32.Parse(node["data"]["win"].Value));
+				PlayerPrefs.SetInt("userLose", System.Int32.Parse(node["data"]["lose"].Value));
+				PlayerPrefs.SetInt("userDraw", System.Int32.Parse(node["data"]["draw"].Value));
+				PlayerPrefs.SetInt("userLevel", System.Int32.Parse(node["data"]["level"].Value));
+				PlayerPrefs.SetInt("userCash", System.Int32.Parse(node["data"]["cash"].Value));
 
 				Application.LoadLevel ("lobby");
 			} else {

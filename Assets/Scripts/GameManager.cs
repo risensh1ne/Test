@@ -86,7 +86,7 @@ public class GameManager : MonoBehaviour {
         GameObject.Find("UI").GetComponent<UIManager>().initializeUI();
 
         startSpawn = true;
-		StartCoroutine ("SpawnMinion");
+		//StartCoroutine ("SpawnMinion");
     }
 
     /*
@@ -147,7 +147,7 @@ public class GameManager : MonoBehaviour {
 		GameObject heroObj = PhotonNetwork.Instantiate (myHeroName, 
 		                                                startPos, Quaternion.LookRotation (direction), 0, data);
 		
-		heroObj.GetComponent<HeroController> ().init_hero (myTeam, startPos, destPos);
+		heroObj.GetComponent<HeroController> ().init_hero (myHeroName, myTeam, startPos, destPos);
 		
 		//addHeroObj (heroObj);
 		
@@ -174,7 +174,7 @@ public class GameManager : MonoBehaviour {
 
 			if (nextSpawnRemaining <= 0) {
 				nextSpawnRemaining = spawnPeriod;
-				StartCoroutine ("SpawnMinion");
+				//StartCoroutine ("SpawnMinion");
             }
 		}
 

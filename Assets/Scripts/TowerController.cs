@@ -216,6 +216,7 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
 			fireballObj.transform.position = firePoint.position;
 			fireballObj.transform.rotation = Quaternion.LookRotation (dir);
 			isAttacking = true;
+			//fireballObj.transform.FindChild("move").GetComponent<Animation>().Play();
 		}
 
 		yield return new WaitForSeconds(attackRate);

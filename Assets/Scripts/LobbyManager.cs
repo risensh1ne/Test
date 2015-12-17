@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using SimpleJSON;
 
 public class LobbyManager : MonoBehaviour {
 
@@ -7,6 +8,7 @@ public class LobbyManager : MonoBehaviour {
 	string userID;
 	int userLevel;
 	int userCash;
+	int userWin, userLose, userDraw;
 
 	public string heroName;
 
@@ -56,6 +58,11 @@ public class LobbyManager : MonoBehaviour {
 
 	public GameObject selectHeroLabel;
 
+	public GameObject labelID;
+	public GameObject labelCash;
+	public GameObject labelLevel;
+	public GameObject labelScore;
+
 	bool connecting;
 
 	string selectedRoomName;
@@ -70,7 +77,7 @@ public class LobbyManager : MonoBehaviour {
 	float selectHeroTimer = 0;
 	float selectHeroTimeRemaining;
 
-	float updateLobbyInterval = 5.0f;
+	float updateLobbyInterval = 10.0f;
 	float updateLobbyTimer = 0;
 
 	// Use this for initialization
@@ -88,7 +95,9 @@ public class LobbyManager : MonoBehaviour {
 		userName = PlayerPrefs.GetString("userName");
 		userLevel = PlayerPrefs.GetInt ("userLevel");
 		userCash = PlayerPrefs.GetInt ("userCash");
-
+		userWin = PlayerPrefs.GetInt ("userWin");
+		userLose = PlayerPrefs.GetInt ("userLose");
+		userDraw = PlayerPrefs.GetInt ("userDraw");
 
 		PhotonNetwork.player.name = userName;
 		PhotonNetwork.ConnectUsingSettings( "risenhine games 001" );
@@ -221,6 +230,14 @@ public class LobbyManager : MonoBehaviour {
 	
 		PhotonNetwork.player.customProperties.Add ("id", userID);
 
+		labelID.GetComponent<UILabel>().text = PlayerPrefs.GetString ("userID");
+		labelCash.GetComponent<UILabel>().text = PlayerPrefs.GetInt ("userCash").ToString();
+		labelLevel.GetComponent<UILabel>().text = "Level" + PlayerPrefs.GetInt ("userLevel").ToString();
+		labelScore.GetComponent<UILabel>().text = 
+			PlayerPrefs.GetInt ("userWin").ToString() + "/" + 
+			PlayerPrefs.GetInt ("userDraw").ToString() + "/" + 
+			PlayerPrefs.GetInt ("userLose").ToString();
+
 		UpdatePlayerList();
 	}
 	
@@ -252,26 +269,59 @@ public class LobbyManager : MonoBehaviour {
 				}
 			}
 
-			Debug.Log ("-->" + PhotonNetwork.countOfPlayers + "," + PhotonNetwork.otherPlayers.Length);
+			WWW www = new WWW("http://risenshine-games.pe.kr/get_user_list.php");
+			StartCoroutine(RequestUserList(www));
 
-			foreach (PhotonPlayer player in PhotonNetwork.playerList ) {
-
-				GameObject playerInfo = Instantiate(playerInfoPrefab) as GameObject;
-				
-				GameObject labelPlayerId = playerInfo.transform.FindChild("player_id").gameObject;		
-				labelPlayerId.GetComponent<UILabel>().text = player.customProperties["id"].ToString();
-				GameObject labelPlayerLevel = playerInfo.transform.FindChild("player_level").gameObject;		
-				labelPlayerLevel.GetComponent<UILabel>().text = "222";
-				GameObject labelPlayerStats = playerInfo.transform.FindChild("player_stats").gameObject;		
-				labelPlayerStats.GetComponent<UILabel>().text = "10/7";
-				GameObject labelPlayerState = playerInfo.transform.FindChild("player_state").gameObject;		
-				labelPlayerState.GetComponent<UILabel>().text = "로비";
-				
-				NGUITools.AddChild(tablePlayer, playerInfo);
-				
-				tablePlayer.GetComponent<UITable>().Reposition();
-			}
 		}
+	}
+
+	IEnumerator RequestUserList(WWW www) {
+		yield return www;
+
+		if (www.error == null)
+		{
+			JSONNode node = JSON.Parse (www.text);
+
+			Debug.Log (node);
+
+			if (node["success"].AsBool == true) {
+
+				JSONArray playerList = node["data"].AsArray;
+			
+				for (int i=0; i < playerList.Count; i++) {
+					GameObject playerInfo = Instantiate(playerInfoPrefab) as GameObject;
+
+					Debug.Log(playerList[i].ToString ());
+					GameObject labelPlayerId = playerInfo.transform.FindChild("player_id").gameObject;		
+					labelPlayerId.GetComponent<UILabel>().text = playerList[i]["id"].Value;
+					GameObject labelPlayerLevel = playerInfo.transform.FindChild("player_level").gameObject;		
+					labelPlayerLevel.GetComponent<UILabel>().text = playerList[i]["level"].Value;
+					GameObject labelPlayerStats = playerInfo.transform.FindChild("player_stats").gameObject;		
+					labelPlayerStats.GetComponent<UILabel>().text 
+						= playerList[i]["win"].Value + "/" + playerList[i]["draw"].Value + "/" + playerList[i]["lose"].Value;
+					GameObject labelPlayerState = playerInfo.transform.FindChild("player_state").gameObject;		
+					labelPlayerState.GetComponent<UILabel>().text = "lobby";
+
+					NGUITools.AddChild(tablePlayer, playerInfo);
+					
+					tablePlayer.GetComponent<UITable>().Reposition();
+				}
+			} else {
+				Debug.Log ("RequestUserList failed");
+			}
+		} else {
+			Debug.Log ("RequestUserList failed");
+		}    
+		
+	}
+
+	void OnDisconnectedFromPhoton() {
+		Debug.Log ("OnDisconnectedFromPhoton");
+
+		WWWForm form = new WWWForm();
+		form.AddField("id", userID);
+		WWW www = new WWW("http://risenshine-games.pe.kr/logout_user.php", form);
+		//StartCoroutine(CheckRegisterResponse(www));
 	}
 
 	void OnReceivedRoomListUpdate() {

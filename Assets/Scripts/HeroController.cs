@@ -62,7 +62,8 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	private bool gotFirstUpdate;
 	
 	Animator anim;
-
+	
+	
     [PunRPC]
 	public void init(object[] param)
 	{
@@ -185,18 +186,31 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		}
 	}
 
-	public void init_hero(GameManager.team team, Vector3 startPos, Vector3 destPos)
+	public void setHeroStat() 
+	{
+		if (heroName == "Gion") {
+			attackRange = 1.5f;
+		} else if (heroName == "Akai") {
+			attackRange = 4.0f;
+		}
+
+	}
+
+	public void init_hero(string _heroName, GameManager.team team, Vector3 startPos, Vector3 destPos)
 	{
 		object[] param = new object[3]{team, startPos, destPos};
+		heroName = _heroName;
+
+		setHeroStat();
 
 		gameObject.GetComponent<PhotonView> ().RPC ("init", PhotonTargets.AllBuffered, param);
-
 	}
 
 	public void changeStateTo(CharacterState newState)
 	{
 		if (newState == CharacterState.STATE_ATTACKING) {
 			if (curr_state == CharacterState.STATE_MOVING) {
+				anim.CrossFade("NormalAttack1", 0.1F);
 				isMoving = false;
 				isAttacking = true;
 			} else if (curr_state == CharacterState.STATE_IDLE) {
@@ -206,6 +220,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 			} 
 		} else if (newState == CharacterState.STATE_MOVING) {
 			if (curr_state == CharacterState.STATE_ATTACKING) {
+				anim.CrossFade("Run", 0.1F);
 				isMoving = true;
 				isAttacking = false;
 			} else if (curr_state == CharacterState.STATE_IDLE) {
@@ -534,7 +549,6 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 
 				} else {
 					destinationPos = eventPos;
-
 					targetEnemy = getClickedAttackTarget ();
 				}
 			}
@@ -546,8 +560,10 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 					changeStateTo (CharacterState.STATE_IDLE);
 					destinationPos = -Vector3.one;
 				} else {
-					transform.position += direction * moveSpeed * Time.fixedDeltaTime;
-					transform.rotation = Quaternion.LookRotation (direction);
+					if (curr_state != CharacterState.STATE_ATTACKING) {
+						transform.position += direction * moveSpeed * Time.fixedDeltaTime;
+						transform.rotation = Quaternion.LookRotation (direction);
+					}
 					changeStateTo (CharacterState.STATE_MOVING);	
 				}
 			} else {
@@ -555,8 +571,10 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 					IPlayer ip = targetEnemy.GetComponent<IPlayer> ();
 					if (!ip.isDead) {
 						if (Vector3.Distance (transform.position, targetEnemy.transform.position) < attackRange) {
+							Vector3 direction = (targetEnemy.transform.position - transform.position).normalized;
+							transform.rotation = Quaternion.LookRotation (direction);	
 							changeStateTo (CharacterState.STATE_ATTACKING);
-						} else {
+						} else if (curr_state != CharacterState.STATE_ATTACKING) {
 							changeStateTo (CharacterState.STATE_MOVING);
 							Vector3 direction = (targetEnemy.transform.position - transform.position).normalized;
 							transform.position += direction * moveSpeed * Time.fixedDeltaTime;
@@ -593,6 +611,9 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		if (targetEnemy == null)
 			return;
 
+		DamageEnemy (40.0f);
+
+		/*
 		float distance = Vector3.Distance (transform.position, targetEnemy.transform.position);
 		if (distance < attackRange) {
 			IPlayer ip = targetEnemy.GetComponent<IPlayer> ();
@@ -602,6 +623,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 		} else {
 			changeStateTo(CharacterState.STATE_IDLE);
 		}
+		*/
 	}
 
 	void OnNormalAttackEnd()
