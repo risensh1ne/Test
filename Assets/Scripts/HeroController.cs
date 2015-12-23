@@ -303,7 +303,7 @@ public class HeroController : Photon.MonoBehaviour, IPlayer {
 	}
 
 	void OnParticleCollision(GameObject other)
-	{
+	{        
 		if (other.name == "Fireball") {
 			damage (30.0f);
 		} else if (other.name == "Explosion") {

@@ -33,6 +33,8 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
     public Texture2D progressBarBack;
 	public Texture2D progressBarHealth;
 
+	public GameObject firing;
+
 	public GameManager.team checkTeam() {
 		return attachedTeam;
 	}
@@ -80,10 +82,8 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
         {
             DestructTower();
         }
-			
 	}
-
-   
+	
     void DestructTower()
     {
         Color origObjColor = GetComponent<MeshRenderer>().material.color;
@@ -100,6 +100,7 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
 	// Use this for initialization
 	void Start () {
 		firePoint = transform.Find ("TowerFirePoint");
+		firing = null;
 
         guiScale.x = (float)Screen.width / (float)originalWidth; // calculate hor scale
         guiScale.y = (float)Screen.height / (float)originalHeight; // calculate vert scale
@@ -156,7 +157,6 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
 
             elapsedTimeOfDistruction += Time.fixedDeltaTime;
 
-
             if (elapsedTimeOfDistruction >= durationOfDistruction)
             {
                 ObjectPool.instance.PoolObject(destructionEffect);
@@ -165,63 +165,75 @@ public class TowerController : Photon.MonoBehaviour, IPlayer {
         }
         else
         {
-            Collider[] cldrs = Physics.OverlapSphere(firePoint.position, attackRange);
-            if (cldrs.Length > 0 && !isAttacking)
-            {
-                for (int i = 0; i < cldrs.Length; i++)
-                {
-                    bool isTarget = false;
-                    if (cldrs[i].tag == "Player" || cldrs[i].tag == "minion")
-                    {
-                        IPlayer ip = cldrs[i].gameObject.GetComponent<IPlayer>();
-                        if (attachedTeam != ip.checkTeam() && !ip.isDead)
-                            isTarget = true;
-                    }
-
-                    if (isTarget)
-                    {
-                        float dist = Vector3.Distance(cldrs[i].transform.position, transform.position);
-                        if (enemyDistance == 0 || dist < enemyDistance)
-                        {
-                            enemyDistance = dist;
-                            enemyIndex = i;
-							//ebug.Log (enemyIndex);
-                        }
-                    }
+			if (isAttacking) {
+                if (firing) {
+                    Vector3 dir = (targetEnemy.transform.position - firing.transform.position).normalized;
+                    firing.transform.rotation = Quaternion.LookRotation (dir);
                 }
-            }
+			} else {
+	            Collider[] cldrs = Physics.OverlapSphere(firePoint.position, attackRange);
+	            if (cldrs.Length > 0 && !isAttacking)
+	            {
+	                for (int i = 0; i < cldrs.Length; i++)
+	                {
+	                    bool isTarget = false;
+	                    if (cldrs[i].tag == "Player" || cldrs[i].tag == "minion")
+	                    {
+	                        IPlayer ip = cldrs[i].gameObject.GetComponent<IPlayer>();
+	                        if (attachedTeam != ip.checkTeam() && !ip.isDead)
+	                            isTarget = true;
+	                    }
 
-            if (enemyIndex >= 0)
-            {
-                targetEnemy = cldrs[enemyIndex].gameObject;
-                IPlayer ip = targetEnemy.GetComponent<IPlayer>();
+	                    if (isTarget)
+	                    {
+	                        float dist = Vector3.Distance(cldrs[i].transform.position, transform.position);
+	                        if (enemyDistance == 0 || dist < enemyDistance)
+	                        {
+	                            enemyDistance = dist;
+	                            enemyIndex = i;
+	                        }
+	                    }
+	                }
+	            }
 
-				if (!ip.isDead) {
-                    gameObject.GetComponent<PhotonView>().RPC("attack", PhotonTargets.All, targetEnemy.transform.position);
-				}
-            }
+	            if (enemyIndex >= 0)
+	            {
+	                targetEnemy = cldrs[enemyIndex].gameObject;
+	                IPlayer ip = targetEnemy.GetComponent<IPlayer>();
+
+					if (!ip.isDead) {
+	                    gameObject.GetComponent<PhotonView>().RPC("attack", PhotonTargets.All);
+					}
+	            }
+			}
         }
 	}
 
 	[PunRPC]
-	void attack(Vector3 targetPos) {
-		StartCoroutine ("Fire", targetPos);
+	void attack() {
+		StartCoroutine ("Fire");
 	}
 
-	IEnumerator Fire(Vector3 targetPos) {
+	IEnumerator Fire() {
+        isAttacking = true;
+        
 		GameObject fireballObj = ObjectPool.instance.GetObjectForType ("Fireball", true);
 		if (fireballObj != null) {
-			fireballObj.GetComponent<FireballData>().team = attachedTeam;
-			Vector3 dir = (targetPos - firePoint.transform.position).normalized;
+			fireballObj.GetComponent<FireballHandler>().team = attachedTeam;
 			fireballObj.transform.position = firePoint.position;
+            Vector3 dir = (targetEnemy.transform.position - firePoint.transform.position).normalized;
 			fireballObj.transform.rotation = Quaternion.LookRotation (dir);
-			isAttacking = true;
-			//fireballObj.transform.FindChild("move").GetComponent<Animation>().Play();
+                
+			firing = fireballObj;
 		}
-
+        
 		yield return new WaitForSeconds(attackRate);
-		isAttacking = false;
-		ObjectPool.instance.PoolObject(fireballObj);
+        
+		if (firing != null) {
+			ObjectPool.instance.PoolObject(firing);
+			firing = null;
+		}
+        isAttacking = false;
     }
-	
+
 }

@@ -261,7 +261,7 @@ public class MinionController : Photon.MonoBehaviour, IPlayer {
     void OnParticleCollision(GameObject other)
 	{
 		if (other.name == "Fireball") {
-            if (other.GetComponent<FireballData>().team != attachedTeam)
+            if (other.GetComponent<FireballHandler>().team != attachedTeam)
 			    damage (40.0f);
 		} else if (other.name == "Explosion") {
 			if (other.GetComponent<ExplosionData>().team != attachedTeam)

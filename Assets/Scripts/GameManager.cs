@@ -86,7 +86,7 @@ public class GameManager : MonoBehaviour {
         GameObject.Find("UI").GetComponent<UIManager>().initializeUI();
 
         startSpawn = true;
-		//StartCoroutine ("SpawnMinion");
+		StartCoroutine ("SpawnMinion");
     }
 
     /*
