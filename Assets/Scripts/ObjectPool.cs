@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class ObjectPool : MonoBehaviour
 {
-	
 	public static ObjectPool instance;
 	
 	/// <summary>
@@ -33,17 +32,20 @@ public class ObjectPool : MonoBehaviour
 	{
 		instance = this;
 	}
-	
-	// Use this for initialization
+
 	void Start ()
 	{
 		containerObject = new GameObject("ObjectPool");
 
+	}
+	// Use this for initialization
+	public void Initialize (GameManager.team team)
+	{
 		//Loop through the object prefabs and make a new list for each one.
 		//We do this because the pool can only support prefabs set to it in the editor,
 		//so we can assume the lists of pooled objects are in the same order as object prefabs in the array
 		pooledObjects = new List<GameObject>[objectPrefabs.Length];
-		
+
 		int i = 0;
 		foreach ( GameObject objectPrefab in objectPrefabs )
 		{
@@ -54,17 +56,13 @@ public class ObjectPool : MonoBehaviour
 			if(i < amountToBuffer.Length) bufferAmount = amountToBuffer[i];
 			else
 				bufferAmount = defaultBufferAmount;
-			
+
 			for ( int n=0; n<bufferAmount; n++)
 			{
-				GameObject newObj = Instantiate(objectPrefab) as GameObject;
+				GameObject newObj = null;
+
+				newObj = Instantiate(objectPrefab) as GameObject;
 				newObj.name = objectPrefab.name;
-
-				if (newObj.name == "minion_alpha")
-					newObj.GetComponent<MinionController>().setTeam(GameManager.team.ALPHA);
-				else if (newObj.name == "minion_beta")
-					newObj.GetComponent<MinionController>().setTeam(GameManager.team.BETA);
-
 				PoolObject(newObj);
 			}
 			
@@ -96,7 +94,7 @@ public class ObjectPool : MonoBehaviour
 				{
 					GameObject pooledObject = pooledObjects[i][0];
 					pooledObjects[i].RemoveAt(0);
-					pooledObject.transform.parent = null;
+					pooledObject.transform.SetParent(null);
 					pooledObject.SetActiveRecursively(true);
 					
 					return pooledObject;
@@ -123,10 +121,11 @@ public class ObjectPool : MonoBehaviour
 	{
 		for ( int i=0; i<objectPrefabs.Length; i++)
 		{
+			Debug.Log (obj.name);
 			if(objectPrefabs[i].name == obj.name)
 			{
 				obj.SetActiveRecursively(false);
-				obj.transform.parent = containerObject.transform;
+				obj.transform.SetParent(containerObject.transform);
 				pooledObjects[i].Add(obj);
 				return;
 			}

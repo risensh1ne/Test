@@ -372,7 +372,40 @@ ModelImporter:
 
 
 '
-    animationRetargetingWarnings: 
+    animationRetargetingWarnings: 'MuscleClip ''FUCM05_0022_M_RISING_P''conversion
+      warning: LeftLowerLeg average position error 0.3 mm and maximum position error
+      5.5 mm at 29%
+
+
+      MuscleClip ''FUCM05_0022_M_RISING_P''conversion warning: LeftUpperArm average
+      position error 62.8 mm and maximum position error 98.5 mm at 12%
+
+
+      MuscleClip ''FUCM05_0022_M_RISING_P''conversion warning: LeftLowerArm average
+      position error 45.4 mm and maximum position error 86.8 mm at 12%
+
+
+      MuscleClip ''FUCM05_0022_M_RISING_P''conversion warning: LeftHand average position
+      error 48.5 mm and maximum position error 95.1 mm at 12%
+
+
+      MuscleClip ''FUCM05_0022_M_RISING_P''conversion warning: RightUpperArm average
+      position error 63.4 mm and maximum position error 90.3 mm at 12%
+
+
+      MuscleClip ''FUCM05_0022_M_RISING_P''conversion warning: RightLowerArm average
+      position error 46.3 mm and maximum position error 82.2 mm at 75%
+
+
+      MuscleClip ''FUCM05_0022_M_RISING_P''conversion warning: RightHand average position
+      error 42.0 mm and maximum position error 87.6 mm at 71%
+
+
+      MuscleClip ''FUCM05_0022_M_RISING_P''conversion warning: Head average position
+      error 62.8 mm and maximum position error 98.4 mm at 12%
+
+
+'
     animationDoRetargetingWarnings: 1
     animationCompression: 3
     animationRotationError: .5
@@ -405,7 +438,7 @@ ModelImporter:
       curves: []
       events:
       - time: .392550141
-        functionName: OnSkill1Start
+        functionName: Skill1Damage
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0

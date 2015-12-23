@@ -17,14 +17,22 @@ public class CameraControl : MonoBehaviour {
 	public float zoomSpeed = 0.3f;
 	float DistanceAway = 0;
 	float DistanceDefault = 10;
-	// Use this for initialization
+
+	public GameObject gm;
+
 	void Start () {
-		Vector3 PlayerPOS = GameObject.Find("Gion").transform.transform.position;	
+		if (gm == null || gm.GetComponent<GameManager>().player == null)
+			return;
+
+		Vector3 PlayerPOS = gm.GetComponent<GameManager>().player.transform.transform.position;	
 		transform.position = new Vector3(PlayerPOS.x, 8, PlayerPOS.z - DistanceDefault);
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
+		if (gm == null || gm.GetComponent<GameManager>().player == null)
+			return;
 
 		if (Input.touches.Length > 1) {
 			for (int i=0; i < Input.touchCount; i++)
@@ -34,10 +42,9 @@ public class CameraControl : MonoBehaviour {
 					Zoom(i);
 				}
 			}
-
 		}
 
-		Vector3 PlayerPOS = GameObject.Find("Gion").transform.transform.position;
+		Vector3 PlayerPOS = gm.GetComponent<GameManager>().player.transform.position;
 		transform.position =  new Vector3(PlayerPOS.x, 8, PlayerPOS.z - (DistanceDefault + DistanceAway));
 
 
@@ -64,8 +71,6 @@ public class CameraControl : MonoBehaviour {
 		zoomFactor = Mathf.Clamp (lastDist - currDist, -5f, 5f); 
 
 		DistanceAway = Mathf.Clamp (Mathf.Lerp (DistanceAway, zoomFactor * zoomSpeed, Time.deltaTime), -2.0f, 8.0f);
-
-		Debug.Log ("distance:" + DistanceAway);
 
 	}
 }
